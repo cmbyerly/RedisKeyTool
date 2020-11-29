@@ -3,6 +3,7 @@ using RadishV2.Server.Application.Command;
 using RadishV2.Server.Application.Utils;
 using RadishV2.Shared;
 using StackExchange.Redis;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,27 +28,34 @@ namespace RadishV2.Server.Application.Handler
         {
             ApplicationResponse response;
 
-            var redisServer = ConnectionBuilder.BuildConnectToRedis(request.KeyPayload.RedisSetting);
-
-            if (redisServer != null)
+            try
             {
-                var db = redisServer.GetDatabase(request.KeyPayload.RedisSetting.SelectedDatabase);
-                foreach (var key in this.GetKeys(redisServer, request.KeyPayload.RedisSetting))
+                var redisServer = ConnectionBuilder.BuildConnectToRedis(request.KeyPayload.RedisSetting);
+
+                if (redisServer != null)
                 {
-                    if (key.KeyName == request.KeyPayload.KeyListItem.KeyName)
+                    var db = redisServer.GetDatabase(request.KeyPayload.RedisSetting.SelectedDatabase);
+                    foreach (var key in this.GetKeys(redisServer, request.KeyPayload.RedisSetting))
                     {
-                        db.KeyDelete(key.KeyName);
+                        if (key.KeyName == request.KeyPayload.KeyListItem.KeyName)
+                        {
+                            db.KeyDelete(key.KeyName);
+                        }
                     }
+
+                    response = new ApplicationResponse(true, "Deleted Keys");
+                }
+                else
+                {
+                    response = new ApplicationResponse(false, "Failed to Delete Keys");
                 }
 
-                response = new ApplicationResponse(true, "Deleted Keys");
+                redisServer.Dispose();
             }
-            else
+            catch (Exception ex)
             {
-                response = new ApplicationResponse(false, "Failed to Delete Keys");
+                response = new ApplicationResponse(false, ex.Message);
             }
-
-            redisServer.Dispose();
 
             return Task.FromResult(response);
         }

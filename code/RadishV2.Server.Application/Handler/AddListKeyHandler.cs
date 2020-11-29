@@ -2,6 +2,7 @@
 using RadishV2.Server.Application.Command;
 using RadishV2.Server.Application.Utils;
 using RadishV2.Shared;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,27 +26,34 @@ namespace RadishV2.Server.Application.Handler
         {
             ApplicationResponse response;
 
-            var redisServer = ConnectionBuilder.BuildConnectToRedis(request.KeyPayload.RedisSetting);
-
-            if (redisServer != null)
+            try
             {
-                var db = redisServer.GetDatabase(request.KeyPayload.RedisSetting.SelectedDatabase);
+                var redisServer = ConnectionBuilder.BuildConnectToRedis(request.KeyPayload.RedisSetting);
 
-                request.KeyPayload.KeyListItem.KeyValues.Reverse();
-
-                foreach (var value in request.KeyPayload.KeyListItem.KeyValues)
+                if (redisServer != null)
                 {
-                    db.ListLeftPush(request.KeyPayload.KeyListItem.KeyName, value.Value);
+                    var db = redisServer.GetDatabase(request.KeyPayload.RedisSetting.SelectedDatabase);
+
+                    request.KeyPayload.KeyListItem.KeyValues.Reverse();
+
+                    foreach (var value in request.KeyPayload.KeyListItem.KeyValues)
+                    {
+                        db.ListLeftPush(request.KeyPayload.KeyListItem.KeyName, value.Value);
+                    }
+
+                    response = new ApplicationResponse(true, "Added or Updated Keys");
+                }
+                else
+                {
+                    response = new ApplicationResponse(true, "Failed to Add or Update Keys");
                 }
 
-                response = new ApplicationResponse(true, "Added or Updated Keys");
+                redisServer.Dispose();
             }
-            else
+            catch (Exception ex)
             {
-                response = new ApplicationResponse(true, "Failed to Add or Update Keys");
+                response = new ApplicationResponse(false, ex.Message);
             }
-
-            redisServer.Dispose();
 
             return Task.FromResult(response);
         }

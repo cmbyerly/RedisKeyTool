@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace RadishV2.Server.Application.Command
 {
     /// <summary>
-    /// Get the redis keys command 
+    /// Get the redis keys command
     /// </summary>
     /// <seealso cref="MediatR.IRequest{System.Collections.Generic.List{RadishV2.Shared.KeyListItem}}" />
     public class GetRedisKeys : IRequest<List<KeyListItem>>

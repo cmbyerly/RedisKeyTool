@@ -2,6 +2,7 @@
 using RadishV2.Server.Application.Command;
 using RadishV2.Server.Application.Utils;
 using RadishV2.Shared;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,21 +26,28 @@ namespace RadishV2.Server.Application.Handler
         {
             ApplicationResponse response;
 
-            var redisServer = ConnectionBuilder.BuildConnectToRedis(request.KeyPayload.RedisSetting);
-
-            if (redisServer != null)
+            try
             {
-                var db = redisServer.GetDatabase(request.KeyPayload.RedisSetting.SelectedDatabase);
-                db.StringSet(request.KeyPayload.KeyListItem.KeyName, request.KeyPayload.KeyListItem.KeyValues[0].Value);
+                var redisServer = ConnectionBuilder.BuildConnectToRedis(request.KeyPayload.RedisSetting);
 
-                response = new ApplicationResponse(true, "Added or Updated Keys");
+                if (redisServer != null)
+                {
+                    var db = redisServer.GetDatabase(request.KeyPayload.RedisSetting.SelectedDatabase);
+                    db.StringSet(request.KeyPayload.KeyListItem.KeyName, request.KeyPayload.KeyListItem.KeyValues[0].Value);
+
+                    response = new ApplicationResponse(true, "Added or Updated Keys");
+                }
+                else
+                {
+                    response = new ApplicationResponse(true, "Failed to Add or Update Keys");
+                }
+
+                redisServer.Dispose();
             }
-            else
+            catch (Exception ex)
             {
-                response = new ApplicationResponse(true, "Failed to Add or Update Keys");
+                response = new ApplicationResponse(false, ex.Message);
             }
-
-            redisServer.Dispose();
 
             return Task.FromResult(response);
         }

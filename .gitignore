@@ -1,0 +1,14 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/code/RadishV2/Client/bin/Debug/net5.0
+/code/RadishV2/Client/obj
+/code/RadishV2/Server/bin/Debug/net5.0
+/code/RadishV2/Server/obj/Debug/net5.0/ref
+/code/RadishV2/Server/obj
+/code/RadishV2/Shared/bin/Debug/net5.0
+/code/RadishV2/Shared/obj
+/code/RadishV2.Server.Application/bin/Debug/net5.0
+/code/RadishV2.Server.Application/obj
+/code/.vs/RadishV2

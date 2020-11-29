@@ -1,0 +1,47 @@
+﻿@inject Radzen.DialogService dialogService
+
+<RadzenCard Style="margin-bottom: 20px;">
+    <RadzenTemplateForm TItem="KeyListItem" Data=@newItem Submit=@OnSubmit>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-4">
+                    Key Name
+                </div>
+                <div class="col-sm-8">
+                    <RadzenTextBox Placeholder="String Value" Name="KeyName" @bind-Value="@newItem.KeyName" Style="margin-bottom: 20px" />
+                    <RadzenRequiredValidator Component="KeyName" Text="Key name is required" Popup=true Style="position: absolute" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    Key Value
+                </div>
+                <div class="col-sm-8">
+                    <RadzenTextBox Placeholder="String Value" Name="KeyValue" @bind-Value="@newItem.KeyValues[0].Value" Style="margin-bottom: 20px" />
+                    <RadzenRequiredValidator Component="KeyValue" Text="Key value is required" Popup=true Style="position: absolute" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="OK" Style="margin-bottom: 10px; width: 150px" />
+                    <RadzenButton Click="@((args) => dialogService.Close(false))" ButtonStyle="ButtonStyle.Danger" Text="Cancel" Style="margin-bottom: 10px; width: 150px" />
+                </div>
+            </div>
+        </div>
+    </RadzenTemplateForm>
+</RadzenCard>
+
+@code {
+
+    KeyListItem newItem = new KeyListItem();
+
+    protected override async Task OnInitializedAsync()
+    {
+        newItem.KeyValues.Add(new KeyValue("0"));
+    }
+
+    void OnSubmit(KeyListItem newItem)
+    {
+        dialogService.Close(newItem);
+    }
+}

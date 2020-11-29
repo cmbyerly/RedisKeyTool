@@ -1,0 +1,146 @@
+﻿@using RadishV2.Client.Dialogs
+@using StackExchange.Redis;
+
+@inject SettingService rs
+@inject KeyService ks
+@inject HttpClient Http
+@inject Radzen.DialogService dialogService
+@inject NotificationService notificationService
+
+<RadzenCard Style="        margin-top: 5px;
+        border-style: ridge;
+        height: 550px
+">
+    <RadzenTemplateForm TItem="KeyListItem" Data=@newItem Submit=@OnSubmit>
+        <div class="container">
+            <div class="row pb-1 pt-2">
+                <div class="col-sm">
+                    <h3>Edit Set Key</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    Key Name
+                </div>
+                <div class="col-sm-8">
+                    <RadzenTextBox Name="KeyName" Placeholder="String Value" @bind-Value="@newItem.KeyName" Style="margin-bottom: 20px" />
+                    <RadzenRequiredValidator Component="KeyName" Text="Key name is required" Popup=true Style="position: absolute" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    Value
+                </div>
+                <div class="col-sm-8">
+                    <RadzenTextBox Placeholder="Value" @bind-Value="@valValue" Style="margin-bottom: 20px" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm">
+                    <RadzenButton Click="@((args) => AddValue())" Disabled="@(valValue.Length <= 0)" ButtonStyle="ButtonStyle.Secondary" Text="Add" Style="margin-bottom: 10px; width: 150px" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="Save" Style="margin-bottom: 10px; width: 150px" />
+                </div>
+            </div>
+        </div>
+    </RadzenTemplateForm>
+
+    <div class="row">
+        <div class="col-sm">
+            <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                           @bind-Value=@value Data=@newItem.KeyValues TextProperty="Name" ValueProperty="Value"
+                           Style="        height: 200px;
+        width: 300px;
+        margin-left: 5px;">
+                <Template>
+                    <div class="text-nowrap">
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Click="@((args) => DeleteValue((context as KeyValue)))" Icon="delete"></RadzenButton>
+                        @((context as KeyValue).Value)
+                    </div>
+                </Template>
+            </RadzenListBox>
+        </div>
+    </div>
+</RadzenCard>
+
+@code {
+
+    KeyListItem newItem = new KeyListItem();
+    string value = "";
+
+    string valValue = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        newItem = ks.CurrentKey;
+
+        StateHasChanged();
+    }
+
+    void AddValue()
+    {
+        KeyValue val = new KeyValue(valValue);
+        newItem.KeyValues.Add(val);
+        valValue = string.Empty;
+
+        StateHasChanged();
+    }
+
+    void DeleteValue(KeyValue val)
+    {
+        newItem.KeyValues.Remove(val);
+
+        StateHasChanged();
+    }
+
+    async Task OnSubmit(KeyListItem newItem)
+    {
+        ApplicationResponse applicationResponse = new ApplicationResponse(false, string.Empty);
+
+        HttpResponseMessage response = null;
+
+        KeyPayload keyPayload = new KeyPayload();
+        keyPayload.RedisSetting = rs.RedisSetting;
+        keyPayload.KeyListItem = newItem;
+        response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/update/set", keyPayload);
+
+        applicationResponse = await response.Content.ReadFromJsonAsync<ApplicationResponse>();
+        if (applicationResponse.IsSuccess)
+        {
+            ShowNotification(applicationResponse.Message);
+        }
+        else
+        {
+            ShowErrorNotification(applicationResponse.Message);
+        }
+
+        StateHasChanged();
+    }
+
+    void ShowNotification(string value)
+    {
+        NotificationMessage message = new NotificationMessage();
+        message.Severity = NotificationSeverity.Info;
+        message.Summary = value;
+        message.Duration = 5000;
+
+        notificationService.Notify(message);
+
+        StateHasChanged();
+    }
+
+    void ShowErrorNotification(string value)
+    {
+        NotificationMessage message = new NotificationMessage();
+        message.Severity = NotificationSeverity.Error;
+        message.Summary = value;
+        message.Duration = 10000;
+
+        notificationService.Notify(message);
+
+        StateHasChanged();
+    }
+}

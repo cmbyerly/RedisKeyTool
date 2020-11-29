@@ -1,0 +1,233 @@
+﻿@using RadishV2.Client.Dialogs
+@using StackExchange.Redis;
+
+@inject SettingService rs
+@inject KeyService ks
+@inject HttpClient Http
+@inject Radzen.DialogService dialogService
+@inject NotificationService notificationService
+
+<RadzenCard Style="margin-top: 5px; border-style: ridge; height:550px">
+    <div class="container">
+        <div class="row pl-3 pb-1 pt-2">
+            <div class="col-sm">
+                <h3>Keys</h3>
+            </div>
+        </div>
+        <div class="row pl-3 pb-1 align-top">
+            <div class="col-sm">
+                <RadzenDropDown AllowClear="false" TValue="RedisType"
+                                Data="@(dataTypes.Select(c => new { KeyTypeName = c.KeyTypeName, RedisType = c.RedisType }).Distinct())"
+                                TextProperty="KeyTypeName" ValueProperty="RedisType" Change="@(args => KeyTypeChange(args))" Disabled="@isDisabled">
+                </RadzenDropDown>
+                <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="@((args) => AddNewValue(args))" Disabled="@(redisType == RedisType.None)">Add</RadzenButton>
+            </div>
+        </div>
+        <div class="row pl-3 pb-1">
+            <div class="col-sm">
+                <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@value Data=@rs.KeyList TextProperty="KeyName" ValueProperty="KeyName"
+                               Change=@(args => OnChange(args, "ListBox with filtering")) Style="height:400px; width:300px;">
+                    <Template>
+                        <div class="text-nowrap">
+                            <RadzenButton ButtonStyle="ButtonStyle.Secondary" Click="@((args) => EditKey((context as KeyListItem)))" Icon="create"></RadzenButton>
+                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Click="@((args) => DeleteKey((context as KeyListItem)))" Icon="delete"></RadzenButton>
+                            @((context as KeyListItem).KeyName)
+                        </div>
+                    </Template>
+                </RadzenListBox>
+            </div>
+        </div>
+    </div>
+</RadzenCard>
+
+@code {
+
+    string value = "";
+    List<KeyType> dataTypes = new List<KeyType>();
+    RedisType redisType = RedisType.None;
+    bool isDisabled = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        dataTypes.Add(new KeyType("string", RedisType.String));
+        dataTypes.Add(new KeyType("hash", RedisType.Hash));
+        dataTypes.Add(new KeyType("list", RedisType.List));
+        dataTypes.Add(new KeyType("set", RedisType.Set));
+        dataTypes.Add(new KeyType("sorted", RedisType.SortedSet));
+
+        dialogService.OnOpen += Open;
+        dialogService.OnClose += Close;
+
+        rs.Notify += OnNotify;
+
+        StateHasChanged();
+    }
+
+    public async Task OnNotify(bool key)
+    {
+        await InvokeAsync(() =>
+        {
+            isDisabled = false;
+
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        rs.Notify -= OnNotify;
+    }
+
+    void Open(string title, Type type, Dictionary<string, object> parameters, DialogOptions options)
+    {
+        StateHasChanged();
+    }
+
+    void Close(dynamic result)
+    {
+        StateHasChanged();
+    }
+
+    void KeyTypeChange(object value)
+    {
+        redisType = (RedisType)value;
+
+        StateHasChanged();
+    }
+
+    async Task EditKey(KeyListItem keyListItem)
+    {
+        await ks.EditKey(keyListItem);
+    }
+
+    async Task DeleteKey(KeyListItem keyListItem)
+    {
+        ApplicationResponse applicationResponse = new ApplicationResponse(false, string.Empty);
+
+        KeyPayload keyPayload = new KeyPayload();
+        keyPayload.RedisSetting = rs.RedisSetting;
+        keyPayload.KeyListItem = keyListItem;
+        HttpResponseMessage response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/delete", keyPayload);
+        applicationResponse = await response.Content.ReadFromJsonAsync<ApplicationResponse>();
+
+        if (applicationResponse.IsSuccess)
+        {
+            rs.KeyList.Remove(keyListItem);
+        }
+        else
+        {
+            ShowErrorNotification(applicationResponse.Message);
+        }
+
+        StateHasChanged();
+    }
+
+    void OnChange(object value, string name)
+    {
+        var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
+
+        Console.WriteLine($"{name} value changed to {str}");
+    }
+
+    async Task AddNewValue(MouseEventArgs e)
+    {
+        ApplicationResponse applicationResponse = new ApplicationResponse(false, string.Empty);
+
+        HttpResponseMessage response = null;
+
+        KeyPayload keyPayload = new KeyPayload();
+        keyPayload.RedisSetting = rs.RedisSetting;
+
+        DialogOptions options = new DialogOptions();
+        options.ShowClose = true;
+
+        dynamic value;
+
+        switch (redisType)
+        {
+            case RedisType.String:
+                value = await dialogService.OpenAsync<AddStringValue>("Add String Key", null, options);
+                if (value is KeyListItem)
+                {
+                    keyPayload.KeyListItem = value;
+                    response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/add/string", keyPayload);
+                }
+                break;
+            case RedisType.Hash:
+                value = await dialogService.OpenAsync<AddHashValue>("Add Hash Key", null, options);
+                if (value is KeyListItem)
+                {
+                    keyPayload.KeyListItem = value;
+                    response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/add/hash", keyPayload);
+                }
+                break;
+            case RedisType.List:
+                value = await dialogService.OpenAsync<AddListValue>("Add List Key", null, options);
+                if (value is KeyListItem)
+                {
+                    keyPayload.KeyListItem = value;
+                    response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/add/list", keyPayload);
+                }
+                break;
+            case RedisType.Set:
+                value = await dialogService.OpenAsync<AddSetValue>("Add Set Key", null, options);
+                if (value is KeyListItem)
+                {
+                    keyPayload.KeyListItem = value;
+                    response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/add/set", keyPayload);
+                }
+                break;
+            case RedisType.SortedSet:
+                value = await dialogService.OpenAsync<AddSortedSetValue>("Add Sorted Set Key", null, options);
+                if (value is KeyListItem)
+                {
+                    keyPayload.KeyListItem = value;
+                    response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/add/sortedset", keyPayload);
+                }
+                break;
+            default:
+                break;
+        }
+
+        if (response != null && keyPayload.KeyListItem.KeyValues.Count > 0)
+        {
+            applicationResponse = await response.Content.ReadFromJsonAsync<ApplicationResponse>();
+            if (applicationResponse.IsSuccess)
+            {
+                rs.KeyList.Add(keyPayload.KeyListItem);
+                ShowNotification(applicationResponse.Message);
+            }
+            else
+            {
+                ShowErrorNotification(applicationResponse.Message);
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    void ShowNotification(string value)
+    {
+        NotificationMessage message = new NotificationMessage();
+        message.Severity = NotificationSeverity.Info;
+        message.Summary = value;
+        message.Duration = 5000;
+
+        notificationService.Notify(message);
+
+        StateHasChanged();
+    }
+
+    void ShowErrorNotification(string value)
+    {
+        NotificationMessage message = new NotificationMessage();
+        message.Severity = NotificationSeverity.Error;
+        message.Summary = value;
+        message.Duration = 10000;
+
+        notificationService.Notify(message);
+
+        StateHasChanged();
+    }
+
+}

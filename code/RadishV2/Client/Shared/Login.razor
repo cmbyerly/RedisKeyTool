@@ -1,0 +1,144 @@
+﻿@inject SettingService rs
+@inject HttpClient Http
+@inject Radzen.DialogService dialogService
+@inject NotificationService notificationService
+
+<div class="container">
+    <RadzenFieldset AllowCollapse="true">
+        <HeaderTemplate>
+            <span>
+                <RadzenIcon Icon="build" /><b style="font-size:30px">Connection Settings</b>
+            </span>
+        </HeaderTemplate>
+        <ChildContent>
+            <RadzenCard>
+                <div class="row pl-3 pt-1">
+                    <div class="col-sm-4">
+                        Redis URL and Port
+                    </div>
+                    <div class="col-sm-8">
+                        <RadzenTextBox Placeholder="Server Address" @bind-Value=@rs.RedisSetting.RedisUrl Style="width: 100%" />
+                    </div>
+                </div>
+                <div class="row pl-3 pt-1">
+                    <div class="col-sm-4">
+                        Redis Username (Optional)
+                    </div>
+                    <div class="col-sm-8">
+                        <RadzenTextBox Placeholder="User" @bind-Value=@rs.RedisSetting.RedisUsername />
+                    </div>
+                </div>
+                <div class="row pl-3 pt-1">
+                    <div class="col-sm-4">
+                        Redis Password (Optional)
+                    </div>
+                    <div class="col-sm-8">
+                        <RadzenTextBox Placeholder="Password" @bind-Value=@rs.RedisSetting.RedisPassword />
+                    </div>
+                </div>
+                <div class="row pl-3 pt-1">
+                    <div class="col-sm">
+                        <RadzenCheckBox TValue="bool" @bind-Value=@rs.RedisSetting.AllowAdmin />
+                        <RadzenLabel Text="Allow Admin" Component="ChkAllowAdmin" Style="margin-left: 5px;" />
+                    </div>
+                </div>
+                <div class="row pl-3 pt-1">
+                    <div class="col-sm float-sm-left">
+                        <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="@((args) => Connect(args))" Style="width: 200px">Get Databases</RadzenButton>
+                    </div>
+                </div>
+                <div class="row pl-3 pt-1">
+                    <div class="col-sm-4">
+                        Select Database
+                    </div>
+                    <div class="col-sm-4">
+                        <RadzenDropDown AllowClear="false" TValue="int"
+                                        Data="@(databases.Select(c => new { DbNumber = c.DbNumber, DbDisplay = c.DbDisplay }).Distinct())"
+                                        TextProperty="DbDisplay" ValueProperty="DbNumber" Style="width:100px" Change="@(args => ChangeDB(args))">
+                        </RadzenDropDown>
+                    </div>
+                    <div class="col-sm-4">
+                        <RadzenButton ButtonStyle="ButtonStyle.Secondary" Click="@((args) => GetKeys(args))" Disabled="@(databases.Length <= 0)">Load</RadzenButton>
+                    </div>
+                </div>
+            </RadzenCard>
+        </ChildContent>
+    </RadzenFieldset>
+</div>
+
+@code {
+    DbListItem[] databases = new DbListItem[0];
+
+    async Task Connect(MouseEventArgs e)
+    {
+        databases = new DbListItem[0];
+        RedisSetting setting = rs.RedisSetting;
+        HttpResponseMessage response = await Http.PostAsJsonAsync<RedisSetting>("Redis/dbs", setting);
+        DatabaseResponse databaseResponse = await response.Content.ReadFromJsonAsync<DatabaseResponse>();
+
+        if (databaseResponse.IsSuccess)
+        {
+            databases = databaseResponse.DbListItems.ToArray();
+
+            ShowNotification("Connected");
+
+            await rs.Update();
+
+            StateHasChanged();
+        }
+        else
+        {
+            ShowErrorNotification(databaseResponse.Message);
+
+            StateHasChanged();
+        }
+    }
+
+    void ChangeDB(object value)
+    {
+        rs.RedisSetting.SelectedDatabase = (int)value;
+
+        ShowNotification("Database: " + rs.RedisSetting.SelectedDatabase.ToString());
+
+        StateHasChanged();
+    }
+
+    async Task GetKeys(MouseEventArgs e)
+    {
+        RedisSetting setting = rs.RedisSetting;
+        HttpResponseMessage response = await Http.PostAsJsonAsync<RedisSetting>("Redis/keys", setting);
+        rs.KeyList.Clear();
+        rs.KeyList.AddRange(await response.Content.ReadFromJsonAsync<KeyListItem[]>());
+
+        ShowNotification("Loaded Database");
+
+        await rs.Update();
+
+        StateHasChanged();
+    }
+
+    void ShowNotification(string value)
+    {
+        NotificationMessage message = new NotificationMessage();
+        message.Severity = NotificationSeverity.Info;
+        message.Summary = value;
+        message.Duration = 5000;
+
+        notificationService.Notify(message);
+
+        StateHasChanged();
+    }
+
+    void ShowErrorNotification(string value)
+    {
+        NotificationMessage message = new NotificationMessage();
+        message.Severity = NotificationSeverity.Error;
+        message.Summary = value;
+        message.Duration = 10000;
+
+        notificationService.Notify(message);
+
+        StateHasChanged();
+    }
+
+}

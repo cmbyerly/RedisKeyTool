@@ -1,0 +1,106 @@
+﻿@using RadishV2.Client.Dialogs
+@using StackExchange.Redis;
+
+@inject SettingService rs
+@inject KeyService ks
+@inject HttpClient Http
+@inject Radzen.DialogService dialogService
+@inject NotificationService notificationService
+
+<RadzenCard Style="        margin-top: 5px;
+        border-style: ridge;
+        height: 550px
+">
+    <RadzenTemplateForm TItem="KeyListItem" Data=@newItem Submit=@OnSubmit>
+        <div class="container">
+            <div class="row pb-1 pt-2">
+                <div class="col-sm">
+                    <h3>Edit String Key</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    Key Name
+                </div>
+                <div class="col-sm-8">
+                    <RadzenTextBox Placeholder="String Value" Name="KeyName" @bind-Value="@newItem.KeyName" Style="margin-bottom: 20px" />
+                    <RadzenRequiredValidator Component="KeyName" Text="Key name is required" Popup=true Style="position: absolute" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    Key Value
+                </div>
+                <div class="col-sm-8">
+                    <RadzenTextBox Placeholder="String Value" Name="KeyValue" @bind-Value="@newItem.KeyValues[0].Value" Style="margin-bottom: 20px" />
+                    <RadzenRequiredValidator Component="KeyValue" Text="Key value is required" Popup=true Style="position: absolute" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="Save" Style="margin-bottom: 10px; width: 150px" />
+                </div>
+            </div>
+        </div>
+    </RadzenTemplateForm>
+</RadzenCard>
+
+@code {
+
+    KeyListItem newItem = new KeyListItem();
+
+    protected override async Task OnInitializedAsync()
+    {
+        newItem = ks.CurrentKey;
+
+        StateHasChanged();
+    }
+
+    async Task OnSubmit(KeyListItem newItem)
+    {
+        ApplicationResponse applicationResponse = new ApplicationResponse(false, string.Empty);
+
+        HttpResponseMessage response = null;
+
+        KeyPayload keyPayload = new KeyPayload();
+        keyPayload.RedisSetting = rs.RedisSetting;
+        keyPayload.KeyListItem = newItem;
+        response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/update/string", keyPayload);
+
+        applicationResponse = await response.Content.ReadFromJsonAsync<ApplicationResponse>();
+        if (applicationResponse.IsSuccess)
+        {
+            ShowNotification(applicationResponse.Message);
+        }
+        else
+        {
+            ShowErrorNotification(applicationResponse.Message);
+        }
+
+        StateHasChanged();
+    }
+
+    void ShowNotification(string value)
+    {
+        NotificationMessage message = new NotificationMessage();
+        message.Severity = NotificationSeverity.Info;
+        message.Summary = value;
+        message.Duration = 5000;
+
+        notificationService.Notify(message);
+
+        StateHasChanged();
+    }
+
+    void ShowErrorNotification(string value)
+    {
+        NotificationMessage message = new NotificationMessage();
+        message.Severity = NotificationSeverity.Error;
+        message.Summary = value;
+        message.Duration = 10000;
+
+        notificationService.Notify(message);
+
+        StateHasChanged();
+    }
+}

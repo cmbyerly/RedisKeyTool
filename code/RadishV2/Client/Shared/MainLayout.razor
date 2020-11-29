@@ -1,4 +1,8 @@
-﻿@inherits LayoutComponentBase
+﻿@using RadishV2.Client.Dialogs
+
+@inherits LayoutComponentBase
+
+@inject Radzen.DialogService dialogService
 
 <RadzenDialog />
 <RadzenNotification />
@@ -9,6 +13,7 @@
     <div class="main">
         <div class="top-row px-4">
             <h2>Radish - Version 2</h2>
+            <RadzenButton Click=@(args => OpenAbout()) Icon="help" ButtonStyle="ButtonStyle.Light" Style="margin-left:5px;padding-left:5px;" />
         </div>
 
         <div class="content px-4">
@@ -16,3 +21,14 @@
         </div>
     </div>
 </div>
+
+@code
+{
+    async Task OpenAbout()
+    {
+        DialogOptions options = new DialogOptions();
+        options.ShowClose = true;
+
+        dynamic value = await dialogService.OpenAsync<AboutRadish>("About Application", null, options);
+    }
+}

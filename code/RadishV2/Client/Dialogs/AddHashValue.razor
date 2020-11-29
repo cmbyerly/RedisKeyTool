@@ -17,7 +17,7 @@
                     Hash Name
                 </div>
                 <div class="col-sm-8">
-                    <RadzenTextBox Placeholder="Hash Name" @bind-Value="@hashName" Style="margin-bottom: 20px" />
+                    <RadzenTextBox Placeholder="Hash Name" @bind-Value="@hashName" Style="margin-bottom: 20px" @oninput=@(args => OnTextChange()) />
                 </div>
             </div>
             <div class="row">
@@ -25,12 +25,26 @@
                     Hash Value
                 </div>
                 <div class="col-sm-8">
-                    <RadzenTextBox Placeholder="Hash Value" @bind-Value="@hashValue" Style="margin-bottom: 20px" />
+                    <RadzenTextBox Placeholder="Hash Value" @bind-Value="@hashValue" Style="margin-bottom: 20px" @oninput=@(args => OnTextChange()) />
                 </div>
             </div>
             <div class="row">
                 <div class="col-sm">
                     <RadzenButton Click="@((args) => AddValue())" Disabled="@(hashName.Length <= 0 || hashValue.Length <= 0)" ButtonStyle="ButtonStyle.Secondary" Text="Add" Style="margin-bottom: 10px; width: 150px" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm">
+                    <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                   @bind-Value=@value Data=@newItem.KeyValues TextProperty="Name" ValueProperty="Value"
+                                   Style="height: 200px;width: 400px;margin-left: 5px;margin-bottom: 5px;">
+                        <Template Context="listContext">
+                            <div class="text-nowrap">
+                                <RadzenButton ButtonStyle="ButtonStyle.Danger" Click="@((args) => DeleteValue((listContext as KeyValue)))" Icon="delete"></RadzenButton>
+                                @((listContext as KeyValue).Name) => @((listContext as KeyValue).Value)
+                            </div>
+                        </Template>
+                    </RadzenListBox>
                 </div>
             </div>
             <div class="row">
@@ -41,21 +55,6 @@
             </div>
         </div>
     </RadzenTemplateForm>
-
-    <div class="row">
-        <div class="col-sm">
-            <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                           @bind-Value=@value Data=@newItem.KeyValues TextProperty="Name" ValueProperty="Value"
-                           Style="height:200px; width:400px; margin-left: 5px;">
-                <Template>
-                    <div class="text-nowrap">
-                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Click="@((args) => DeleteValue((context as KeyValue)))" Icon="delete"></RadzenButton>
-                        @((context as KeyValue).Name) => @((context as KeyValue).Value)
-                    </div>
-                </Template>
-            </RadzenListBox>
-        </div>
-    </div>
 </RadzenCard>
 
 @code {
@@ -68,6 +67,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+    }
+
+    void OnTextChange()
+    {
+        StateHasChanged();
     }
 
     void AddValue()

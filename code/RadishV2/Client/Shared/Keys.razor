@@ -1,11 +1,12 @@
-﻿@using RadishV2.Client.Dialogs
+﻿@inherits NotificationComponent
+
+@using RadishV2.Client.Dialogs
 @using StackExchange.Redis;
 
 @inject SettingService rs
 @inject KeyService ks
 @inject HttpClient Http
 @inject Radzen.DialogService dialogService
-@inject NotificationService notificationService
 
 <RadzenCard Style="margin-top: 5px; border-style: ridge; height:550px">
     <div class="container">
@@ -15,11 +16,13 @@
             </div>
         </div>
         <div class="row pl-3 pb-1 align-top">
-            <div class="col-sm">
+            <div class="col-sm-6">
                 <RadzenDropDown AllowClear="false" TValue="RedisType"
                                 Data="@(dataTypes.Select(c => new { KeyTypeName = c.KeyTypeName, RedisType = c.RedisType }).Distinct())"
                                 TextProperty="KeyTypeName" ValueProperty="RedisType" Change="@(args => KeyTypeChange(args))" Disabled="@isDisabled">
                 </RadzenDropDown>
+            </div>
+            <div class="col-sm-2">
                 <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="@((args) => AddNewValue(args))" Disabled="@(redisType == RedisType.None)">Add</RadzenButton>
             </div>
         </div>
@@ -49,11 +52,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        dataTypes.Add(new KeyType("string", RedisType.String));
-        dataTypes.Add(new KeyType("hash", RedisType.Hash));
-        dataTypes.Add(new KeyType("list", RedisType.List));
-        dataTypes.Add(new KeyType("set", RedisType.Set));
-        dataTypes.Add(new KeyType("sorted", RedisType.SortedSet));
+        dataTypes.Add(new KeyType("String Key", RedisType.String));
+        dataTypes.Add(new KeyType("Hash Key", RedisType.Hash));
+        dataTypes.Add(new KeyType("List Key", RedisType.List));
+        dataTypes.Add(new KeyType("Set Key", RedisType.Set));
+        dataTypes.Add(new KeyType("Sorted Set Key", RedisType.SortedSet));
 
         dialogService.OnOpen += Open;
         dialogService.OnClose += Close;
@@ -206,28 +209,6 @@
         StateHasChanged();
     }
 
-    void ShowNotification(string value)
-    {
-        NotificationMessage message = new NotificationMessage();
-        message.Severity = NotificationSeverity.Info;
-        message.Summary = value;
-        message.Duration = 5000;
-
-        notificationService.Notify(message);
-
-        StateHasChanged();
-    }
-
-    void ShowErrorNotification(string value)
-    {
-        NotificationMessage message = new NotificationMessage();
-        message.Severity = NotificationSeverity.Error;
-        message.Summary = value;
-        message.Duration = 10000;
-
-        notificationService.Notify(message);
-
-        StateHasChanged();
-    }
+    
 
 }

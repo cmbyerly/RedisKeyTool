@@ -1,7 +1,8 @@
-﻿@inject SettingService rs
+﻿@inherits NotificationComponent
+
+@inject SettingService rs
 @inject HttpClient Http
 @inject Radzen.DialogService dialogService
-@inject NotificationService notificationService
 
 <div class="container">
     <RadzenFieldset AllowCollapse="true">
@@ -33,7 +34,7 @@
                         Redis Password (Optional)
                     </div>
                     <div class="col-sm-8">
-                        <RadzenTextBox Placeholder="Password" @bind-Value=@rs.RedisSetting.RedisPassword />
+                        <RadzenPassword Placeholder="Password" @bind-Value=@rs.RedisSetting.RedisPassword />
                     </div>
                 </div>
                 <div class="row pl-3 pt-1">
@@ -113,30 +114,6 @@
         ShowNotification("Loaded Database");
 
         await rs.Update();
-
-        StateHasChanged();
-    }
-
-    void ShowNotification(string value)
-    {
-        NotificationMessage message = new NotificationMessage();
-        message.Severity = NotificationSeverity.Info;
-        message.Summary = value;
-        message.Duration = 5000;
-
-        notificationService.Notify(message);
-
-        StateHasChanged();
-    }
-
-    void ShowErrorNotification(string value)
-    {
-        NotificationMessage message = new NotificationMessage();
-        message.Severity = NotificationSeverity.Error;
-        message.Summary = value;
-        message.Duration = 10000;
-
-        notificationService.Notify(message);
 
         StateHasChanged();
     }

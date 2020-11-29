@@ -1,11 +1,12 @@
-﻿@using RadishV2.Client.Dialogs
+﻿@inherits NotificationComponent
+
+@using RadishV2.Client.Dialogs
 @using StackExchange.Redis;
 
 @inject SettingService rs
 @inject KeyService ks
 @inject HttpClient Http
 @inject Radzen.DialogService dialogService
-@inject NotificationService notificationService
 
 <RadzenCard Style="        margin-top: 5px;
         border-style: ridge;
@@ -53,7 +54,27 @@
     {
         newItem = ks.CurrentKey;
 
+        ks.NotifyEditKey += OnEditKeyNotify;
+
         StateHasChanged();
+    }
+
+    public async Task OnEditKeyNotify(KeyListItem key)
+    {
+        KeyPayload keyPayload = new KeyPayload();
+        keyPayload.RedisSetting = rs.RedisSetting;
+        keyPayload.KeyListItem = key;
+        HttpResponseMessage response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/inflate", keyPayload);
+        newItem = await response.Content.ReadFromJsonAsync<KeyListItem>();
+
+        ks.CurrentKey = newItem;
+
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        ks.NotifyEditKey -= OnEditKeyNotify;
     }
 
     async Task OnSubmit(KeyListItem newItem)
@@ -76,30 +97,6 @@
         {
             ShowErrorNotification(applicationResponse.Message);
         }
-
-        StateHasChanged();
-    }
-
-    void ShowNotification(string value)
-    {
-        NotificationMessage message = new NotificationMessage();
-        message.Severity = NotificationSeverity.Info;
-        message.Summary = value;
-        message.Duration = 5000;
-
-        notificationService.Notify(message);
-
-        StateHasChanged();
-    }
-
-    void ShowErrorNotification(string value)
-    {
-        NotificationMessage message = new NotificationMessage();
-        message.Severity = NotificationSeverity.Error;
-        message.Summary = value;
-        message.Duration = 10000;
-
-        notificationService.Notify(message);
 
         StateHasChanged();
     }

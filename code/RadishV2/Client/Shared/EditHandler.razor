@@ -1,11 +1,12 @@
-﻿@using RadishV2.Client.Dialogs
+﻿@inherits NotificationComponent
+
+@using RadishV2.Client.Dialogs
 @using StackExchange.Redis;
 
 @inject SettingService rs
 @inject KeyService ks
 @inject HttpClient Http
 @inject Radzen.DialogService dialogService
-@inject NotificationService notificationService
 
 @switch (keyListItem.KeyType)
 {
@@ -36,6 +37,11 @@
         ks.NotifyEditKey += OnEditKeyNotify;
 
         StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        ks.NotifyEditKey -= OnEditKeyNotify;
     }
 
     public async Task OnEditKeyNotify(KeyListItem key)

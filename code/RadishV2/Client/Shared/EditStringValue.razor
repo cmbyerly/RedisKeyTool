@@ -32,9 +32,15 @@
                 <div class="col-sm-4">
                     Key Value
                 </div>
-                <div class="col-sm-8">
+                <div class="col-sm-6">
                     <RadzenTextBox Placeholder="String Value" Name="KeyValue" @bind-Value="@newItem.KeyValues[0].Value" Style="margin-bottom: 20px" />
                     <RadzenRequiredValidator Component="KeyValue" Text="Key value is required" Popup=true Style="position: absolute" />
+                </div>
+                <div class="col-sm-1">
+                    <RadzenButton Click="@((args) => IncrementValue())" Disabled="@(!ValueIsNumeric())" ButtonStyle="ButtonStyle.Secondary" Icon="add" />
+                </div>
+                <div class="col-sm-1">
+                    <RadzenButton Click="@((args) => DecrementValue())" Disabled="@(!ValueIsNumeric())" ButtonStyle="ButtonStyle.Secondary" Icon="remove" />
                 </div>
             </div>
             <div class="row">
@@ -70,6 +76,37 @@
         ks.CurrentKey = newItem;
 
         StateHasChanged();
+    }
+
+    bool ValueIsNumeric()
+    {
+        bool retval = true;
+
+        foreach (char c in newItem.KeyValues[0].Value)
+        {
+            if (!char.IsDigit(c) && c != '-')
+            {
+                retval = false;
+            }
+        }
+
+        return retval;
+    }
+
+    void IncrementValue()
+    {
+        if (ValueIsNumeric())
+        {
+            newItem.KeyValues[0].Value = (Convert.ToInt32(newItem.KeyValues[0].Value) + 1).ToString();
+        }
+    }
+
+    void DecrementValue()
+    {
+        if (ValueIsNumeric())
+        {
+            newItem.KeyValues[0].Value = (Convert.ToInt32(newItem.KeyValues[0].Value) - 1).ToString();
+        }
     }
 
     public void Dispose()

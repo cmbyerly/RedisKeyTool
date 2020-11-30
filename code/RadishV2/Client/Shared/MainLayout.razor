@@ -10,12 +10,24 @@
 <RadzenTooltip />
 
 <div class="page">
+    <header>
+        <!-- Fixed navbar -->
+        <nav class="navbar navbar-expand-md navbar-light fixed-top bg-light">
+            <div class="navbar-brand">Radish - Version 2</div>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <div class="navbar-nav mr-auto">
+                    &nbsp; @*This is here for spacing*@
+                </div>
+                <form class="form-inline mt-2 mt-md-0 float-right">
+                    <RadzenButton Click=@(args => OpenAbout()) Icon="help" ButtonStyle="ButtonStyle.Light" />
+                </form>
+            </div>
+        </nav>
+    </header>
     <div class="main">
         <div class="top-row px-4">
-            <h2>Radish - Version 2</h2>
-            <RadzenButton Click=@(args => OpenAbout()) Icon="help" ButtonStyle="ButtonStyle.Light" Style="margin-left:5px;padding-left:5px;" />
+            &nbsp; @*This is here for spacing*@
         </div>
-
         <div class="content px-4">
             @Body
         </div>

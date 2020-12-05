@@ -8,7 +8,7 @@
                     Key Name
                 </div>
                 <div class="col-sm-8">
-                    <RadzenTextBox Placeholder="String Value" Name="KeyName" @bind-Value="@newItem.KeyName" Style="margin-bottom: 20px" />
+                    <RadzenTextBox Placeholder="String Value" Name="KeyName" @bind-Value="@newItem.KeyName" Style="margin-bottom: 20px; width: 60%;" />
                     <RadzenRequiredValidator Component="KeyName" Text="Key name is required" Popup=true Style="position: absolute" />
                 </div>
             </div>
@@ -17,7 +17,7 @@
                     Key Value
                 </div>
                 <div class="col-sm-8">
-                    <RadzenTextBox Placeholder="String Value" Name="KeyValue" @bind-Value="@newItem.KeyValues[0].Value" Style="margin-bottom: 20px" />
+                    <RadzenTextBox Placeholder="String Value" Name="KeyValue" @bind-Value="@newItem.KeyValues[0].Value" Style="margin-bottom: 20px; width: 60%;" />
                     <RadzenRequiredValidator Component="KeyValue" Text="Key value is required" Popup=true Style="position: absolute" />
                 </div>
             </div>

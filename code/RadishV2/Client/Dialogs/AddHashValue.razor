@@ -8,7 +8,7 @@
                     Key Name
                 </div>
                 <div class="col-sm-8">
-                    <RadzenTextBox Name="KeyName" Placeholder="String Value" @bind-Value="@newItem.KeyName" Style="margin-bottom: 20px" />
+                    <RadzenTextBox Name="KeyName" Placeholder="String Value" @bind-Value="@newItem.KeyName" Style="margin-bottom: 20px; width: 60%;" />
                     <RadzenRequiredValidator Component="KeyName" Text="Key name is required" Popup=true Style="position: absolute" />
                 </div>
             </div>
@@ -17,7 +17,7 @@
                     Hash Name
                 </div>
                 <div class="col-sm-8">
-                    <RadzenTextBox Placeholder="Hash Name" @bind-Value="@hashName" Style="margin-bottom: 20px" @oninput=@(args => OnTextChange()) />
+                    <RadzenTextBox Placeholder="Hash Name" @bind-Value="@hashName" Style="margin-bottom: 20px; width: 60%;" @oninput=@(args => OnTextChange()) />
                 </div>
             </div>
             <div class="row">
@@ -25,7 +25,7 @@
                     Hash Value
                 </div>
                 <div class="col-sm-8">
-                    <RadzenTextBox Placeholder="Hash Value" @bind-Value="@hashValue" Style="margin-bottom: 20px" @oninput=@(args => OnTextChange()) />
+                    <RadzenTextBox Placeholder="Hash Value" @bind-Value="@hashValue" Style="margin-bottom: 20px; width: 60%;" @oninput=@(args => OnTextChange()) />
                 </div>
             </div>
             <div class="row">
@@ -37,7 +37,7 @@
                 <div class="col-sm">
                     <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                    @bind-Value=@value Data=@newItem.KeyValues TextProperty="Name" ValueProperty="Value"
-                                   Style="height: 200px;width: 400px;margin-left: 5px;margin-bottom: 5px;">
+                                   Style="height: 200px;width: 100%;margin-left: 5px;margin-bottom: 5px;">
                         <Template Context="listContext">
                             <div class="text-nowrap">
                                 <RadzenButton ButtonStyle="ButtonStyle.Danger" Click="@((args) => DeleteValue((listContext as KeyValue)))" Icon="delete"></RadzenButton>

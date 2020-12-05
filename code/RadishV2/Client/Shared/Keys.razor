@@ -11,25 +11,25 @@
 <RadzenCard Style="margin-top: 5px; border-style: ridge; height:550px">
     <div class="container">
         <div class="row pl-3 pb-1 pt-2">
-            <div class="col-sm">
+            <div class="col-sm-12">
                 <h3>Keys</h3>
             </div>
         </div>
         <div class="row pl-3 pb-1 align-top">
-            <div class="col-sm-6">
+            <div class="col-sm-7">
                 <RadzenDropDown AllowClear="false" TValue="RedisType"
                                 Data="@(dataTypes.Select(c => new { KeyTypeName = c.KeyTypeName, RedisType = c.RedisType }).Distinct())"
                                 TextProperty="KeyTypeName" ValueProperty="RedisType" Change="@(args => KeyTypeChange(args))" Disabled="@isDisabled">
                 </RadzenDropDown>
             </div>
-            <div class="col-sm-2">
+            <div class="col-sm-5">
                 <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="@((args) => AddNewValue(args))" Disabled="@(redisType == RedisType.None)">Add</RadzenButton>
             </div>
         </div>
         <div class="row pl-3 pb-1">
-            <div class="col-sm">
+            <div class="col-sm-12">
                 <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@value Data=@rs.KeyList TextProperty="KeyName" ValueProperty="KeyName"
-                               Change=@(args => OnChange(args, "ListBox with filtering")) Style="height:400px; width:300px;">
+                               Change=@(args => OnChange(args, "ListBox with filtering")) Style="height:400px; width:100%;">
                     <Template>
                         <div class="text-nowrap">
                             <RadzenButton ButtonStyle="ButtonStyle.Secondary" Click="@((args) => EditKey((context as KeyListItem)))" Icon="create"></RadzenButton>

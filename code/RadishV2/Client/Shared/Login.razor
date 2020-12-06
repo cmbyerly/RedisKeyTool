@@ -1,8 +1,11 @@
 ﻿@inherits NotificationComponent
 
+@using RadishV2.Client.Dialogs
+
 @inject SettingService rs
 @inject HttpClient Http
 @inject Radzen.DialogService dialogService
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 <div class="container">
     <RadzenFieldset AllowCollapse="true">
@@ -17,8 +20,14 @@
                     <div class="col-sm-4">
                         Redis URL and Port
                     </div>
-                    <div class="col-sm-8">
+                    <div class="col-sm-6">
                         <RadzenTextBox Placeholder="Server Address" @bind-Value=@rs.RedisSetting.RedisUrl Style="width: 100%" />
+                    </div>
+                    <div class="col-sm-1">
+                        <RadzenButton Click=@(args => SaveConnection()) ButtonStyle="ButtonStyle.Secondary" Icon="save" Style="margin-bottom: 20px;" />
+                    </div>
+                    <div class="col-sm-1">
+                        <RadzenButton Click=@(args => LoadConnection()) ButtonStyle="ButtonStyle.Light" Icon="get_app" Style="margin-bottom: 20px; margin-right: 3px;" />
                     </div>
                 </div>
                 <div class="row pl-3 pt-1">
@@ -69,6 +78,14 @@
 
 @code {
     DbListItem[] databases = new DbListItem[0];
+    RedisSetting[] connections = new RedisSetting[0];
+    bool hasSettings = false;
+    string connectionName = "redisConnections";
+
+    protected override async Task OnInitializedAsync()
+    {
+        hasSettings = await localStorage.ContainKeyAsync(connectionName);
+    }
 
     async Task Connect(MouseEventArgs e)
     {
@@ -114,6 +131,50 @@
         ShowNotification("Loaded Database");
 
         await rs.Update();
+
+        StateHasChanged();
+    }
+
+    async void SaveConnection()
+    {
+        DialogOptions options = new DialogOptions();
+        options.ShowClose = true;
+        dynamic value = await dialogService.OpenAsync<ConnectionSave>("Save Connection", null, options);
+
+        if (value is RedisSetting)
+        {
+            if (hasSettings)
+            {
+                connections = await localStorage.GetItemAsync<RedisSetting[]>(connectionName);
+                List<RedisSetting> redisSettings = new List<RedisSetting>();
+                redisSettings.AddRange(connections);
+                rs.RedisSetting.SettingName = ((RedisSetting)value).SettingName;
+                redisSettings.Add(rs.RedisSetting);
+                await localStorage.SetItemAsync<RedisSetting[]>(connectionName, redisSettings.ToArray());
+                hasSettings = true;
+            }
+            else
+            {
+                List<RedisSetting> redisSettings = new List<RedisSetting>();
+                rs.RedisSetting.SettingName = ((RedisSetting)value).SettingName;
+                redisSettings.Add(rs.RedisSetting);
+                await localStorage.SetItemAsync<RedisSetting[]>(connectionName, redisSettings.ToArray());
+                hasSettings = true;
+            }
+        }
+    }
+
+    async void LoadConnection()
+    {
+        DialogOptions options = new DialogOptions();
+        options.ShowClose = true;
+        dynamic value = await dialogService.OpenAsync<ConnectionLoad>("Load Connection", null, options);
+
+        if (value is RedisSetting)
+        {
+            Console.WriteLine(((RedisSetting)value).RedisUrl);
+            rs.RedisSetting = value;
+        }
 
         StateHasChanged();
     }

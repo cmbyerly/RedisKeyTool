@@ -1,0 +1,54 @@
+﻿@inject Radzen.DialogService dialogService
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inherits NotificationComponent
+
+<RadzenCard Style="margin-bottom: 20px;">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm">
+                <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                               @bind-Value=@value Data=@connections TextProperty="SettingName" ValueProperty="SettingName"
+                               Style="height: 200px;width: 100%;margin-left: 5px;margin-bottom: 5px;"
+                               Change=@(args => OnChange(args))>
+                    <Template Context="listContext">
+                        <div class="text-nowrap">
+                            @((listContext as RedisSetting).SettingName)
+                        </div>
+                    </Template>
+                </RadzenListBox>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <RadzenButton Click="@((args) => dialogService.Close(this.redisSetting))" ButtonStyle="ButtonStyle.Primary" Text="OK" Style="margin-bottom: 10px; width: 150px" />
+                <RadzenButton Click="@((args) => dialogService.Close(false))" ButtonStyle="ButtonStyle.Danger" Text="Cancel" Style="margin-bottom: 10px; width: 150px" />
+            </div>
+        </div>
+    </div>
+</RadzenCard>
+
+@code {
+    List<RedisSetting> connections = new List<RedisSetting>();
+    RedisSetting redisSetting = new RedisSetting();
+    bool hasSettings = false;
+    string connectionName = "redisConnections";
+    string value = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        hasSettings = await localStorage.ContainKeyAsync(connectionName);
+        if (hasSettings)
+        {
+            var values = await localStorage.GetItemAsync<RedisSetting[]>(connectionName);
+            if (values != null)
+            {
+                connections.AddRange(values);
+            }
+        }
+    }
+
+    void OnChange(object value)
+    {
+        redisSetting = connections.FirstOrDefault(k => k.SettingName == Convert.ToString(value));
+    }
+}

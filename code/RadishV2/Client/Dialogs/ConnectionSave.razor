@@ -1,0 +1,38 @@
+﻿@inject Radzen.DialogService dialogService
+
+<RadzenCard Style="margin-bottom: 20px;">
+    <RadzenTemplateForm TItem="RedisSetting" Data=@connectionSetting Submit=@OnSubmit>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-4">
+                    Connection Name
+                </div>
+                <div class="col-sm-8">
+                    <RadzenTextBox Placeholder="Connection Name" Name="ConnName" @bind-Value="@connectionSetting.SettingName" Style="margin-bottom: 20px; width: 60%;" />
+                    <RadzenRequiredValidator Component="ConnName" Text="Connection name is required" Popup=true Style="position: absolute" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="Save" Style="margin-bottom: 10px; width: 150px" />
+                    <RadzenButton Click="@((args) => dialogService.Close(false))" ButtonStyle="ButtonStyle.Danger" Text="Cancel" Style="margin-bottom: 10px; width: 150px" />
+                </div>
+            </div>
+        </div>
+    </RadzenTemplateForm>
+</RadzenCard>
+
+@code {
+
+    RedisSetting connectionSetting = new RedisSetting();
+
+    protected override Task OnInitializedAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    void OnSubmit(RedisSetting connectionSetting)
+    {
+        dialogService.Close(connectionSetting);
+    }
+}

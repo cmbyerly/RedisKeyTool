@@ -13,12 +13,21 @@ namespace RadishV2.Shared
         /// </summary>
         public RedisSetting()
         {
+            this.SettingName = string.Empty;
             this.RedisUrl = "localhost:6379";
-            this.RedisUsername = "";
-            this.RedisPassword = "";
+            this.RedisUsername = string.Empty;
+            this.RedisPassword = string.Empty;
             this.SelectedDatabase = 0;
             this.AllowAdmin = false;
         }
+
+        /// <summary>
+        /// Gets or sets the name of the setting.
+        /// </summary>
+        /// <value>
+        /// The name of the setting.
+        /// </value>
+        public string SettingName { get; set; }
 
         /// <summary>
         /// Gets the redis URL.

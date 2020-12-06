@@ -1,4 +1,5 @@
 ﻿@inject Radzen.DialogService dialogService
+@inherits NotificationComponent
 
 <RadzenCard Style="margin-bottom: 20px;">
     <RadzenTemplateForm TItem="KeyListItem" Data=@newItem Submit=@OnSubmit>
@@ -29,7 +30,8 @@
                 <div class="col-sm">
                     <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                    @bind-Value=@value Data=@newItem.KeyValues TextProperty="Name" ValueProperty="Value"
-                                   Style="height: 200px;width: 100%;margin-left: 5px;margin-bottom: 5px;">
+                                   Style="height: 200px;width: 100%;margin-left: 5px;margin-bottom: 5px;"
+                                   Change=@(args => OnChange(args))>
                         <Template Context="listContext">
                             <div class="text-nowrap">
                                 <RadzenButton ButtonStyle="ButtonStyle.Danger" Click="@((args) => DeleteValue((listContext as KeyValue)))" Icon="delete"></RadzenButton>
@@ -50,14 +52,15 @@
 </RadzenCard>
 
 @code {
-
+    SetValidator validator = new SetValidator();
     KeyListItem newItem = new KeyListItem();
+    int currIdx = 0;
     string value = "";
-
     string valValue = string.Empty;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
+        return Task.CompletedTask;
     }
 
     void OnTextChange()
@@ -65,13 +68,53 @@
         StateHasChanged();
     }
 
+    void OnChange(object value)
+    {
+        currIdx = newItem.KeyValues.FindIndex(k => k.Value == Convert.ToString(value));
+        KeyValue val = newItem.KeyValues.FirstOrDefault(k => k.Value == Convert.ToString(value));
+        this.valValue = val.Value;
+    }
+
     void AddValue()
     {
         KeyValue val = new KeyValue(valValue);
-        newItem.KeyValues.Add(val);
-        valValue = string.Empty;
+        ValidationResult result = validator.Validate(val);
 
-        StateHasChanged();
+        if (result.IsValid)
+        {
+            newItem.KeyValues.Add(val);
+            valValue = string.Empty;
+
+            StateHasChanged();
+        }
+        else
+        {
+            foreach (ValidationFailure error in result.Errors)
+            {
+                ShowErrorNotification(error.ErrorMessage);
+            }
+        }
+    }
+
+    void EditValue()
+    {
+        KeyValue val = new KeyValue(valValue);
+
+        ValidationResult result = validator.Validate(val);
+
+        if (result.IsValid)
+        {
+            newItem.KeyValues[currIdx] = val;
+
+            StateHasChanged();
+        }
+        else
+        {
+            foreach (ValidationFailure error in result.Errors)
+            {
+                ShowErrorNotification(error.ErrorMessage);
+            }
+        }
     }
 
     void DeleteValue(KeyValue val)

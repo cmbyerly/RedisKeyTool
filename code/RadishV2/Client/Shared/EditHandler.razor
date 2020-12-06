@@ -32,11 +32,13 @@
 @code {
     KeyListItem keyListItem = new KeyListItem();
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
         ks.NotifyEditKey += OnEditKeyNotify;
 
         StateHasChanged();
+
+        return Task.CompletedTask;
     }
 
     public void Dispose()

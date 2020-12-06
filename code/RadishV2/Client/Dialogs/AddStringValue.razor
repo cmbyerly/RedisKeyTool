@@ -35,9 +35,10 @@
 
     KeyListItem newItem = new KeyListItem();
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
         newItem.KeyValues.Add(new KeyValue("0"));
+        return Task.CompletedTask;
     }
 
     void OnSubmit(KeyListItem newItem)

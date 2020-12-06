@@ -29,7 +29,7 @@
         <div class="row pl-3 pb-1">
             <div class="col-sm-12">
                 <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@value Data=@rs.KeyList TextProperty="KeyName" ValueProperty="KeyName"
-                               Change=@(args => OnChange(args, "ListBox with filtering")) Style="height:400px; width:100%;">
+                               Change=@(args => OnChange(args)) Style="height:400px; width:100%;">
                     <Template>
                         <div class="text-nowrap">
                             <RadzenButton ButtonStyle="ButtonStyle.Danger" Click="@((args) => DeleteKey((context as KeyListItem)))" Icon="delete"></RadzenButton>
@@ -49,7 +49,7 @@
     RedisType redisType = RedisType.None;
     bool isDisabled = true;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
         dataTypes.Add(new KeyType("String Key", RedisType.String));
         dataTypes.Add(new KeyType("Hash Key", RedisType.Hash));
@@ -63,6 +63,8 @@
         rs.Notify += OnNotify;
 
         StateHasChanged();
+
+        return Task.CompletedTask;
     }
 
     public async Task OnNotify(bool key)
@@ -119,7 +121,7 @@
         StateHasChanged();
     }
 
-    async void OnChange(object value, string name)
+    async void OnChange(object value)
     {
         KeyListItem keyListItem = rs.KeyList.FirstOrDefault(k => k.KeyName == Convert.ToString(value));
         await ks.EditKey(keyListItem);
@@ -201,7 +203,5 @@
 
         StateHasChanged();
     }
-
-
 
 }

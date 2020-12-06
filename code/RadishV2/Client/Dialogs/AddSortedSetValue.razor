@@ -1,4 +1,5 @@
 ﻿@inject Radzen.DialogService dialogService
+@inherits NotificationComponent
 
 <RadzenCard Style="margin-bottom: 20px;">
     <RadzenTemplateForm TItem="KeyListItem" Data=@newItem Submit=@OnSubmit>
@@ -37,7 +38,8 @@
                 <div class="col-sm">
                     <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                    @bind-Value=@value Data=@newItem.KeyValues TextProperty="Name" ValueProperty="Value"
-                                   Style="height: 200px;width: 100%;margin-left: 5px;margin-bottom: 5px;">
+                                   Style="height: 200px;width: 100%;margin-left: 5px;margin-bottom: 5px;"
+                                   Change=@(args => OnChange(args))>
                         <Template Context="listContext">
                             <div class="text-nowrap">
                                 <RadzenButton ButtonStyle="ButtonStyle.Danger" Click="@((args) => DeleteValue((listContext as KeyValue)))" Icon="delete"></RadzenButton>
@@ -58,15 +60,16 @@
 </RadzenCard>
 
 @code {
-
+    SortedSetValidator validator = new SortedSetValidator();
     KeyListItem newItem = new KeyListItem();
     string value = "";
-
+    int currIdx = 0;
     string valValue = string.Empty;
     double valScore = 0.0;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
+        return Task.CompletedTask;
     }
 
     void OnTextChange()
@@ -74,16 +77,58 @@
         StateHasChanged();
     }
 
+    void OnChange(object value)
+    {
+        currIdx = newItem.KeyValues.FindIndex(k => k.Value == Convert.ToString(value));
+        KeyValue val = newItem.KeyValues.FirstOrDefault(k => k.Value == Convert.ToString(value));
+        this.valValue = val.Value;
+        this.valScore = val.Score;
+    }
+
     void AddValue()
     {
         KeyValue val = new KeyValue(valValue, valScore);
-        newItem.KeyValues.Add(val);
-        valValue = string.Empty;
-        valScore = 0.0;
 
-        newItem.KeyValues = newItem.KeyValues.OrderBy(x => x.Score).ToList();
+        ValidationResult result = validator.Validate(val);
 
-        StateHasChanged();
+        if (result.IsValid)
+        {
+            newItem.KeyValues.Add(val);
+            valValue = string.Empty;
+            valScore = 0.0;
+
+            newItem.KeyValues = newItem.KeyValues.OrderBy(x => x.Score).ToList();
+
+            StateHasChanged();
+        }
+        else
+        {
+            foreach (ValidationFailure error in result.Errors)
+            {
+                ShowErrorNotification(error.ErrorMessage);
+            }
+        }
+    }
+
+    void EditValue()
+    {
+        KeyValue val = new KeyValue(valValue, valScore);
+
+        ValidationResult result = validator.Validate(val);
+
+        if (result.IsValid)
+        {
+            newItem.KeyValues[currIdx] = val;
+
+            StateHasChanged();
+        }
+        else
+        {
+            foreach (ValidationFailure error in result.Errors)
+            {
+                ShowErrorNotification(error.ErrorMessage);
+            }
+        }
     }
 
     void DeleteValue(KeyValue val)

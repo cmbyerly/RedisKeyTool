@@ -57,13 +57,15 @@
 
     KeyListItem newItem = new KeyListItem();
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
         newItem = ks.CurrentKey;
 
         ks.NotifyEditKey += OnEditKeyNotify;
 
         StateHasChanged();
+
+        return Task.CompletedTask;
     }
 
     public async Task OnEditKeyNotify(KeyListItem key)

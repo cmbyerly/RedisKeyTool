@@ -39,5 +39,18 @@ namespace RadishV2.Server.Application.Utils
 
             return redisServer;
         }
+
+        /// <summary>
+        /// Does the key exist.
+        /// </summary>
+        /// <param name="db">The database.</param>
+        /// <param name="keyName">Name of the key.</param>
+        /// <returns>
+        /// Whether key exists.
+        /// </returns>
+        public static bool DoesKeyExist(IDatabase db, string keyName)
+        {
+            return db.KeyExists(keyName);
+        }
     }
 }

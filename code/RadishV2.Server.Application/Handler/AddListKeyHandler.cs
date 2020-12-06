@@ -34,14 +34,21 @@ namespace RadishV2.Server.Application.Handler
                 {
                     var db = redisServer.GetDatabase(request.KeyPayload.RedisSetting.SelectedDatabase);
 
-                    request.KeyPayload.KeyListItem.KeyValues.Reverse();
-
-                    foreach (var value in request.KeyPayload.KeyListItem.KeyValues)
+                    if (ConnectionBuilder.DoesKeyExist(db, request.KeyPayload.KeyListItem.KeyName))
                     {
-                        db.ListLeftPush(request.KeyPayload.KeyListItem.KeyName, value.Value);
+                        response = new ApplicationResponse(false, "Key Exists");
                     }
+                    else
+                    {
+                        request.KeyPayload.KeyListItem.KeyValues.Reverse();
 
-                    response = new ApplicationResponse(true, "Added or Updated Keys");
+                        foreach (var value in request.KeyPayload.KeyListItem.KeyValues)
+                        {
+                            db.ListLeftPush(request.KeyPayload.KeyListItem.KeyName, value.Value);
+                        }
+
+                        response = new ApplicationResponse(true, "Added or Updated Keys");
+                    }
                 }
                 else
                 {

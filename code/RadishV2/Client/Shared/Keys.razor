@@ -8,7 +8,7 @@
 @inject HttpClient Http
 @inject Radzen.DialogService dialogService
 
-<RadzenCard Style="margin-top: 5px; border-style: ridge; height:550px">
+<RadzenCard Style="margin-top: 5px; border-style: ridge; margin-bottom: 5px; min-height:550px;">
     <div class="container">
         <div class="row pl-3 pb-1 pt-2">
             <div class="col-sm-12">
@@ -32,7 +32,6 @@
                                Change=@(args => OnChange(args, "ListBox with filtering")) Style="height:400px; width:100%;">
                     <Template>
                         <div class="text-nowrap">
-                            <RadzenButton ButtonStyle="ButtonStyle.Secondary" Click="@((args) => EditKey((context as KeyListItem)))" Icon="create"></RadzenButton>
                             <RadzenButton ButtonStyle="ButtonStyle.Danger" Click="@((args) => DeleteKey((context as KeyListItem)))" Icon="delete"></RadzenButton>
                             @((context as KeyListItem).KeyName)
                         </div>
@@ -98,11 +97,6 @@
         StateHasChanged();
     }
 
-    async Task EditKey(KeyListItem keyListItem)
-    {
-        await ks.EditKey(keyListItem);
-    }
-
     async Task DeleteKey(KeyListItem keyListItem)
     {
         ApplicationResponse applicationResponse = new ApplicationResponse(false, string.Empty);
@@ -125,11 +119,10 @@
         StateHasChanged();
     }
 
-    void OnChange(object value, string name)
+    async void OnChange(object value, string name)
     {
-        var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
-
-        Console.WriteLine($"{name} value changed to {str}");
+        KeyListItem keyListItem = rs.KeyList.FirstOrDefault(k => k.KeyName == Convert.ToString(value));
+        await ks.EditKey(keyListItem);
     }
 
     async Task AddNewValue(MouseEventArgs e)
@@ -209,6 +202,6 @@
         StateHasChanged();
     }
 
-    
+
 
 }

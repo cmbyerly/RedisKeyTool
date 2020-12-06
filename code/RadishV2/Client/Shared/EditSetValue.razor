@@ -8,10 +8,11 @@
 @inject HttpClient Http
 @inject Radzen.DialogService dialogService
 
-<RadzenCard Style="        margin-top: 5px;
+<RadzenCard Style="    margin-top: 5px;
         border-style: ridge;
-        height: 550px
-">
+        margin-bottom: 5px;
+        min-height: 550px;
+    ">
     <RadzenTemplateForm TItem="KeyListItem" Data=@newItem Submit=@OnSubmit>
         <div class="container">
             <div class="row pb-1 pt-2">

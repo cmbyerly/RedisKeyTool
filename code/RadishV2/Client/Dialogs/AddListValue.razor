@@ -42,7 +42,7 @@
             <div class="row">
                 <div class="col-sm">
                     <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                   @bind-Value=@value Data=@newItem.KeyValues TextProperty="Name" ValueProperty="Value"
+                                   @bind-Value=@value Data=@newItem.KeyValues TextProperty="Value" ValueProperty="Value"
                                    Style="height: 200px;width: 100%;margin-left: 5px;margin-bottom: 5px;"
                                    Change=@(args => OnChange(args))>
                         <Template Context="listContext">

@@ -49,15 +49,22 @@
 
     public async Task OnEditKeyNotify(KeyListItem key)
     {
-        await loadingService.StartLoading();
-        KeyPayload keyPayload = new KeyPayload();
-        keyPayload.RedisSetting = rs.RedisSetting;
-        keyPayload.KeyListItem = key;
-        HttpResponseMessage response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/inflate", keyPayload);
-        keyListItem = await response.Content.ReadFromJsonAsync<KeyListItem>();
+        try
+        {
+            await loadingService.StartLoading();
+            KeyPayload keyPayload = new KeyPayload();
+            keyPayload.RedisSetting = rs.RedisSetting;
+            keyPayload.KeyListItem = key;
+            HttpResponseMessage response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/inflate", keyPayload);
+            keyListItem = await response.Content.ReadFromJsonAsync<KeyListItem>();
 
-        ks.CurrentKey = keyListItem;
-        await loadingService.StopLoading();
-        StateHasChanged();
+            ks.CurrentKey = keyListItem;
+            await loadingService.StopLoading();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ShowErrorNotification(ex.Message);
+        }
     }
 }

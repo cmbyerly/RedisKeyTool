@@ -27,6 +27,7 @@ namespace RadishV2.Client
 
             builder.Services.AddSingleton(sp => new SettingService());
             builder.Services.AddSingleton(sp => new KeyService());
+            builder.Services.AddSingleton(sp => new LoadingService());
             builder.Services.AddScoped<DialogService>();
             builder.Services.AddScoped<NotificationService>();
             builder.Services.AddScoped<TooltipService>();

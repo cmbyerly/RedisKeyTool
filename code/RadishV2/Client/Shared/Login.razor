@@ -6,6 +6,7 @@
 @inject HttpClient Http
 @inject Radzen.DialogService dialogService
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject LoadingService loadingService
 
 <div class="container">
     <RadzenFieldset AllowCollapse="true">
@@ -89,6 +90,7 @@
 
     async Task Connect(MouseEventArgs e)
     {
+        await loadingService.StartLoading();
         databases = new DbListItem[0];
         RedisSetting setting = rs.RedisSetting;
         HttpResponseMessage response = await Http.PostAsJsonAsync<RedisSetting>("Redis/dbs", setting);
@@ -101,13 +103,13 @@
             ShowNotification("Connected");
 
             await rs.Update();
-
+            await loadingService.StopLoading();
             StateHasChanged();
         }
         else
         {
             ShowErrorNotification(databaseResponse.Message);
-
+            await loadingService.StopLoading();
             StateHasChanged();
         }
     }
@@ -123,6 +125,7 @@
 
     async Task GetKeys(MouseEventArgs e)
     {
+        await loadingService.StartLoading();
         RedisSetting setting = rs.RedisSetting;
         HttpResponseMessage response = await Http.PostAsJsonAsync<RedisSetting>("Redis/keys", setting);
         rs.KeyList.Clear();
@@ -131,7 +134,7 @@
         ShowNotification("Loaded Database");
 
         await rs.Update();
-
+        await loadingService.StopLoading();
         StateHasChanged();
     }
 

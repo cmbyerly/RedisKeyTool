@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 
 namespace RadishV2.Server
 {
@@ -14,6 +15,12 @@ namespace RadishV2.Server
         /// <param name="args">The arguments.</param>
         public static void Main(string[] args)
         {
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
+
             CreateHostBuilder(args).Build().Run();
         }
 

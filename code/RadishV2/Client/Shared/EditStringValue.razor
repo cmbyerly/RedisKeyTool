@@ -7,6 +7,7 @@
 @inject KeyService ks
 @inject HttpClient Http
 @inject Radzen.DialogService dialogService
+@inject LoadingService loadingService
 
 <RadzenCard Style="    margin-top: 5px;
         border-style: ridge;
@@ -70,6 +71,7 @@
 
     public async Task OnEditKeyNotify(KeyListItem key)
     {
+        await loadingService.StartLoading();
         KeyPayload keyPayload = new KeyPayload();
         keyPayload.RedisSetting = rs.RedisSetting;
         keyPayload.KeyListItem = key;
@@ -78,6 +80,7 @@
 
         ks.CurrentKey = newItem;
 
+        await loadingService.StopLoading();
         StateHasChanged();
     }
 
@@ -119,6 +122,7 @@
 
     async Task OnSubmit(KeyListItem newItem)
     {
+        await loadingService.StartLoading();
         ApplicationResponse applicationResponse = new ApplicationResponse(false, string.Empty);
 
         HttpResponseMessage response = null;
@@ -138,6 +142,7 @@
             ShowErrorNotification(applicationResponse.Message);
         }
 
+        await loadingService.StopLoading();
         StateHasChanged();
     }
 }

@@ -1,6 +1,15 @@
 ﻿@inject NotificationService notificationService
+@inject Radzen.DialogService dialogService
+@inject LoadingService loadingService
 
 @code {
+    protected override Task OnInitializedAsync()
+    {
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+
     public void ShowNotification(string value)
     {
         NotificationMessage message = new NotificationMessage();

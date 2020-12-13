@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RadishV2.Application.Command;
+using Serilog;
 
 namespace RadishV2.Server
 {
@@ -38,6 +39,8 @@ namespace RadishV2.Server
         /// <param name="services">The services.</param>
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));
+
             services.AddControllersWithViews();
             services.AddRazorPages();
 

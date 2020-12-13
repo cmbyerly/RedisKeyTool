@@ -1,0 +1,64 @@
+﻿@inject Radzen.DialogService dialogService
+@inject LoadingService loadingService
+
+<style>
+    .progress-container {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        z-index: 999;
+        top: 50%;
+        left: 50%;
+    }
+</style>
+@if (showLoading)
+{
+    <div class="progress-container">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12">
+                    <h3>Please wait...</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" Style="margin-bottom: 20px" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    bool showLoading = false;
+
+    protected override Task OnInitializedAsync()
+    {
+        loadingService.NotifyStopLoading += OnCloseLoading;
+        loadingService.NotifyStartLoading += OnStartLoading;
+
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        loadingService.NotifyStopLoading -= OnCloseLoading;
+        loadingService.NotifyStartLoading -= OnStartLoading;
+    }
+
+    Task OnStartLoading()
+    {
+        showLoading = true;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    Task OnCloseLoading()
+    {
+        showLoading = false;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+}

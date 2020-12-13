@@ -7,6 +7,7 @@
 @inject KeyService ks
 @inject HttpClient Http
 @inject Radzen.DialogService dialogService
+@inject LoadingService loadingService
 
 <RadzenCard Style="margin-top: 5px; border-style: ridge; margin-bottom: 5px; min-height:550px;">
     <div class="container">
@@ -101,6 +102,7 @@
 
     async Task DeleteKey(KeyListItem keyListItem)
     {
+        await loadingService.StartLoading();
         ApplicationResponse applicationResponse = new ApplicationResponse(false, string.Empty);
 
         KeyPayload keyPayload = new KeyPayload();
@@ -118,6 +120,7 @@
             ShowErrorNotification(applicationResponse.Message);
         }
 
+        await loadingService.StopLoading();
         StateHasChanged();
     }
 
@@ -147,6 +150,7 @@
                 value = await dialogService.OpenAsync<AddStringValue>("Add String Key", null, options);
                 if (value is KeyListItem)
                 {
+                    await loadingService.StartLoading();
                     keyPayload.KeyListItem = value;
                     response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/add/string", keyPayload);
                 }
@@ -155,6 +159,7 @@
                 value = await dialogService.OpenAsync<AddHashValue>("Add Hash Key", null, options);
                 if (value is KeyListItem)
                 {
+                    await loadingService.StartLoading();
                     keyPayload.KeyListItem = value;
                     response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/add/hash", keyPayload);
                 }
@@ -163,6 +168,7 @@
                 value = await dialogService.OpenAsync<AddListValue>("Add List Key", null, options);
                 if (value is KeyListItem)
                 {
+                    await loadingService.StartLoading();
                     keyPayload.KeyListItem = value;
                     response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/add/list", keyPayload);
                 }
@@ -171,6 +177,7 @@
                 value = await dialogService.OpenAsync<AddSetValue>("Add Set Key", null, options);
                 if (value is KeyListItem)
                 {
+                    await loadingService.StartLoading();
                     keyPayload.KeyListItem = value;
                     response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/add/set", keyPayload);
                 }
@@ -179,6 +186,7 @@
                 value = await dialogService.OpenAsync<AddSortedSetValue>("Add Sorted Set Key", null, options);
                 if (value is KeyListItem)
                 {
+                    await loadingService.StartLoading();
                     keyPayload.KeyListItem = value;
                     response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/add/sortedset", keyPayload);
                 }
@@ -201,6 +209,7 @@
             }
         }
 
+        await loadingService.StopLoading();
         StateHasChanged();
     }
 

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using RadishV2.Application.Command;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,20 @@ namespace RadishV2.Application.Handler
     public class PingHandler : IRequestHandler<Ping, string>
     {
         /// <summary>
+        /// The logger
+        /// </summary>
+        private readonly ILogger<PingHandler> _logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PingHandler"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public PingHandler(ILogger<PingHandler> logger)
+        {
+            _logger = logger;
+        }
+
+        /// <summary>
         /// Handles a request
         /// </summary>
         /// <param name="request">The request</param>
@@ -21,6 +36,7 @@ namespace RadishV2.Application.Handler
         /// </returns>
         public Task<string> Handle(Ping request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("PONG");
             return Task.FromResult("Pong");
         }
     }

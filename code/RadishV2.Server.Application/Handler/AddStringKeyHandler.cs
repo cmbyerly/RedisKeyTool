@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using RadishV2.Server.Application.Command;
 using RadishV2.Server.Application.Utils;
 using RadishV2.Shared;
@@ -14,6 +15,20 @@ namespace RadishV2.Server.Application.Handler
     /// <seealso cref="MediatR.IRequestHandler{RadishV2.Server.Application.Command.AddStringKey, RadishV2.Shared.ApplicationResponse}" />
     public class AddStringKeyHandler : IRequestHandler<AddStringKey, ApplicationResponse>
     {
+        /// <summary>
+        /// The logger
+        /// </summary>
+        private readonly ILogger<AddStringKeyHandler> _logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AddStringKeyHandler"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public AddStringKeyHandler(ILogger<AddStringKeyHandler> logger)
+        {
+            _logger = logger;
+        }
+
         /// <summary>
         /// Handles a request
         /// </summary>
@@ -54,6 +69,7 @@ namespace RadishV2.Server.Application.Handler
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex.Message, ex);
                 response = new ApplicationResponse(false, ex.Message);
             }
 

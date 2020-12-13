@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using RadishV2.Server.Application.Command;
 using RadishV2.Server.Application.Utils;
 using RadishV2.Shared;
@@ -15,6 +16,20 @@ namespace RadishV2.Server.Application.Handler
     /// <seealso cref="MediatR.IRequestHandler{RadishV2.Server.Application.Command.GetRedisKeys, System.Collections.Generic.List{RadishV2.Shared.KeyListItem}}" />
     public class GetRedisKeysHandler : IRequestHandler<GetRedisKeys, List<KeyListItem>>
     {
+        /// <summary>
+        /// The logger
+        /// </summary>
+        private readonly ILogger<GetRedisKeysHandler> _logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GetRedisKeysHandler"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public GetRedisKeysHandler(ILogger<GetRedisKeysHandler> logger)
+        {
+            _logger = logger;
+        }
+
         /// <summary>
         /// Handles a request
         /// </summary>
@@ -40,6 +55,7 @@ namespace RadishV2.Server.Application.Handler
             }
             else
             {
+                _logger.LogError("Not Connected to Redis");
                 throw new RedisException("Not Connected to Redis");
             }
 

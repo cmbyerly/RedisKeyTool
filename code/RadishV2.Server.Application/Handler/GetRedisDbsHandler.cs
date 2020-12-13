@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using RadishV2.Application.Command;
 using RadishV2.Server.Application.Utils;
 using RadishV2.Shared;
@@ -15,12 +16,11 @@ namespace RadishV2.Application.Handler
     /// <seealso cref="MediatR.IRequestHandler{RadishV2.Application.Command.GetRedisDbs, System.Collections.Generic.IEnumerable{RadishV2.Entities.DbListItem}}" />
     public class GetRedisDbsHandler : IRequestHandler<GetRedisDbs, DatabaseResponse>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GetRedisDbsHandler"/> class.
-        /// </summary>
-        /// <param name="settingService">The setting service.</param>
-        public GetRedisDbsHandler()
+        private readonly ILogger<GetRedisDbsHandler> _logger;
+
+        public GetRedisDbsHandler(ILogger<GetRedisDbsHandler> logger)
         {
+            _logger = logger;
         }
 
         /// <summary>
@@ -54,6 +54,7 @@ namespace RadishV2.Application.Handler
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex.Message, ex);
                 databaseResponse = new DatabaseResponse(false, ex.Message);
             }
 

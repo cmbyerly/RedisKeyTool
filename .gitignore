@@ -12,3 +12,5 @@
 /code/RadishV2.Server.Application/bin/Debug/net5.0
 /code/RadishV2.Server.Application/obj
 /code/.vs/RadishV2
+/code/RadishV2.Tests/bin/Debug
+/code/RadishV2.Tests/obj

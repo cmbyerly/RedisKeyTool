@@ -17,7 +17,7 @@
         public DbListItem(int dbNumber)
         {
             DbNumber = dbNumber;
-            DbDisplay = "DB-" + DbNumber;
+            DbDisplay = $"DB-{dbNumber}";
         }
 
         /// <summary>

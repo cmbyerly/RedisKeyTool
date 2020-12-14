@@ -6,5 +6,11 @@ namespace RadishV2.Application.Command
     /// This is the ping class.
     /// </summary>
     /// <seealso cref="MediatR.IRequest{System.String}" />
-    public class Ping : IRequest<string> { }
+    public class Ping : IRequest<string> 
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Ping"/> class.
+        /// </summary>
+        public Ping() { }
+    }
 }

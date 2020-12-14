@@ -9,6 +9,8 @@ namespace RadishV2.Server.Application.Command
     /// <seealso cref="MediatR.IRequest{RadishV2.Shared.ApplicationResponse}" />
     public class AddSortedSetKey : IRequest<ApplicationResponse>
     {
+        public AddSortedSetKey() { }
+
         /// <summary>
         /// Gets or sets the key payload.
         /// </summary>

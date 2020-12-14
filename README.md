@@ -2,7 +2,7 @@
 
 ## About
 
-This is a simple Redis GUI client for strings, hashes, lists, sets, and sorted sets.  It is build with .Net 5, StackExchange.Redis, and Radzen Blazor Components.
+This is a simple Redis Key Management GUI for strings, hashes, lists, sets, and sorted sets.  It is build with .Net 5, StackExchange.Redis, and Radzen Blazor Components.
 
 ## Debugging
 

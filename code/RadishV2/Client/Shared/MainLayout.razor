@@ -12,10 +12,13 @@
 <header>
     <!-- Fixed navbar -->
     <nav class="navbar navbar-expand-md navbar-light fixed-top bg-light">
-        <div class="navbar-brand">Radish - Version 2</div>
+        <div class="navbar-brand">
+            <RadzenImage Path="radish_icon.png" Style="width:30px" />
+            Radish
+        </div>
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <div class="navbar-nav mr-auto">
-                &nbsp; @*This is here for spacing*@
+                <NavMenu />
             </div>
             <form class="form-inline mt-2 mt-md-0 float-right">
                 <RadzenButton Click=@(args => OpenAbout()) Icon="help" ButtonStyle="ButtonStyle.Light" />
@@ -28,20 +31,11 @@
         <div>
             <div style="padding-top: 10px;">&nbsp;</div>
         </div>
-        <div class="content px-4">
+        <div class="content px-10">
             @Body
         </div>
     </div>
 </main>
-<footer class="footer mt-auto py-3">
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <RadzenLink Path="https://github.com/cmbyerly/radishv2" Text="Radish V2 - GitHub" Icon="web" target="_blank" />
-            </div>
-        </div>
-    </div>
-</footer>
 
 @code
 {

@@ -15,8 +15,9 @@ namespace RadishV2.Service
         /// </summary>
         public SettingService()
         {
-            this.RedisSetting = new RedisSetting();
-            this.KeyList = new List<KeyListItem>();
+            RedisSetting = new RedisSetting();
+            KeyList = new List<KeyListItem>();
+            IsLoggedIn = false;
         }
 
         /// <summary>
@@ -36,13 +37,23 @@ namespace RadishV2.Service
         public List<KeyListItem> KeyList { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is logged in.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is logged in; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsLoggedIn { get; set; }
+
+        /// <summary>
         /// Updates this instance.
         /// </summary>
-        public async Task Update()
+        public async Task Update(bool isLoggedIn)
         {
+            IsLoggedIn = isLoggedIn;
+
             if (Notify != null)
             {
-                await Notify.Invoke(true);
+                await Notify.Invoke(isLoggedIn);
             }
         }
 

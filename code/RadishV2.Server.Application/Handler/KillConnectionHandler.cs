@@ -2,10 +2,8 @@
 using Microsoft.Extensions.Logging;
 using RadishV2.Server.Application.Command;
 using RadishV2.Server.Application.Utils;
-using RadishV2.Shared;
 using StackExchange.Redis;
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,7 +13,7 @@ namespace RadishV2.Server.Application.Handler
     /// This gets our redis keys
     /// </summary>
     /// <seealso cref="MediatR.IRequestHandler{RadishV2.Server.Application.Command.GetRedisKeys, System.Collections.Generic.List{RadishV2.Shared.KeyListItem}}" />
-    public class GetRedisKeysHandler : IRequestHandler<GetRedisKeys, List<KeyListItem>>
+    public class KillConnectionHandler : IRequestHandler<KillConnection, bool>
     {
         /// <summary>
         /// The logger
@@ -26,7 +24,7 @@ namespace RadishV2.Server.Application.Handler
         /// Initializes a new instance of the <see cref="GetRedisKeysHandler"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public GetRedisKeysHandler(ILogger<GetRedisKeysHandler> logger)
+        public KillConnectionHandler(ILogger<GetRedisKeysHandler> logger)
         {
             _logger = logger;
         }
@@ -40,21 +38,23 @@ namespace RadishV2.Server.Application.Handler
         /// Response from the request
         /// </returns>
         /// <exception cref="RedisException">Not Connected to Redis</exception>
-        public Task<List<KeyListItem>> Handle(GetRedisKeys request, CancellationToken cancellationToken)
+        public Task<bool> Handle(KillConnection request, CancellationToken cancellationToken)
         {
-            var redisServer = ConnectionBuilder.BuildConnectToRedis(request.RedisSetting);
+            ConnectionMultiplexer connectionMultiplexer;
+            var redisServer = ConnectionBuilder.BuildConnectToRedisServer(request.ConnectionKiller, out connectionMultiplexer);
 
-            var db = redisServer.GetDatabase(request.RedisSetting.SelectedDatabase);
-            List<KeyListItem> myKeys = new List<KeyListItem>();
             if (redisServer != null)
             {
-                foreach (var key in redisServer.GetServer(request.RedisSetting.RedisUrl).Keys(request.RedisSetting.SelectedDatabase))
+                foreach (var client in redisServer.ClientList())
                 {
-                    KeyListItem item = new KeyListItem(key, db.KeyType(key));
-                    myKeys.Add(item);
+                    if (client.Id == Convert.ToInt64(request.ConnectionKiller.Id))
+                    {
+                        redisServer.ClientKill(client.Id);
+                    }
                 }
 
-                myKeys = myKeys.OrderBy(x => x.KeyName).ToList();
+                connectionMultiplexer.Close();
+                connectionMultiplexer.Dispose();
             }
             else
             {
@@ -62,10 +62,7 @@ namespace RadishV2.Server.Application.Handler
                 throw new RedisException("Not Connected to Redis");
             }
 
-            redisServer.Close();
-            redisServer.Dispose();
-
-            return Task.FromResult(myKeys);
+            return Task.FromResult(true);
         }
     }
 }

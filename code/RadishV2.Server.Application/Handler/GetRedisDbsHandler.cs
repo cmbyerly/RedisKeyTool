@@ -50,6 +50,7 @@ namespace RadishV2.Application.Handler
 
                 databaseResponse = new DatabaseResponse(retval, true, "Connected");
 
+                redisServer.Close();
                 redisServer.Dispose();
             }
             catch (Exception ex)

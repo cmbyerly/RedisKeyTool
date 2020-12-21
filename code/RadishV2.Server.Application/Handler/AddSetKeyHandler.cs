@@ -83,6 +83,7 @@ namespace RadishV2.Server.Application.Handler
                     response = new ApplicationResponse(true, "Failed to Add or Update Keys");
                 }
 
+                redisServer.Close();
                 redisServer.Dispose();
             }
             catch (Exception ex)

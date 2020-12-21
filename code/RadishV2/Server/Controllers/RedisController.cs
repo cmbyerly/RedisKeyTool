@@ -46,6 +46,31 @@ namespace RadishV2.Server.Controllers
         }
 
         /// <summary>
+        /// Gets the clients.
+        /// </summary>
+        /// <param name="setting">The setting.</param>
+        /// <returns></returns>
+        [HttpPost("clients")]
+        public ClientListItem[] GetClients([FromBody] RedisSetting setting)
+        {
+            var result = _mediatr.Send(new GetServerClients() { RedisSetting = setting }).Result.ToArray();
+            return result;
+        }
+
+        /// <summary>
+        /// Kills the connection.
+        /// </summary>
+        /// <param name="setting">The setting.</param>
+        /// <returns></returns>
+        [HttpPost("kill")]
+        public ClientListItem[] KillConnection([FromBody] ConnectionKiller setting)
+        {
+            var kresult = _mediatr.Send(new KillConnection() { ConnectionKiller = setting }).Result;
+            var result = _mediatr.Send(new GetServerClients() { RedisSetting = setting }).Result.ToArray();
+            return result;
+        }
+
+        /// <summary>
         /// Deletes the key.
         /// </summary>
         /// <param name="payload">The payload.</param>

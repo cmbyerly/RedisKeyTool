@@ -1,9 +1,6 @@
-﻿using RadishV2.Application.Handler;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
-using System;
-using System.Threading.Tasks;
 
 namespace RadishV2.Application.Handler.Tests
 {

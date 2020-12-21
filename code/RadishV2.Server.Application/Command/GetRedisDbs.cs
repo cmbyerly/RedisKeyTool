@@ -9,7 +9,9 @@ namespace RadishV2.Application.Command
     /// <seealso cref="MediatR.IRequest{RadishV2.Shared.DatabaseResponse}" />
     public class GetRedisDbs : IRequest<DatabaseResponse>
     {
-        public GetRedisDbs() { }
+        public GetRedisDbs()
+        {
+        }
 
         /// <summary>
         /// Gets or sets the redis setting.

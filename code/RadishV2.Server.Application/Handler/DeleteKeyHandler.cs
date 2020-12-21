@@ -65,6 +65,7 @@ namespace RadishV2.Server.Application.Handler
                     response = new ApplicationResponse(false, "Failed to Delete Keys");
                 }
 
+                redisServer.Close();
                 redisServer.Dispose();
             }
             catch (Exception ex)

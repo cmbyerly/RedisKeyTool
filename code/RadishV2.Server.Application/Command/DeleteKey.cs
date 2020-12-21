@@ -9,7 +9,9 @@ namespace RadishV2.Server.Application.Command
     /// <seealso cref="MediatR.IRequest{RadishV2.Shared.ApplicationResponse}" />
     public class DeleteKey : IRequest<ApplicationResponse>
     {
-        public DeleteKey() { }
+        public DeleteKey()
+        {
+        }
 
         /// <summary>
         /// Gets or sets the key payload.

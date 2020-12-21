@@ -4,8 +4,8 @@ using RadishV2.Server.Application.Command;
 using RadishV2.Server.Application.Utils;
 using RadishV2.Shared;
 using StackExchange.Redis;
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -44,7 +44,6 @@ namespace RadishV2.Server.Application.Handler
         {
             var redisServer = ConnectionBuilder.BuildConnectToRedis(request.KeyPayload.RedisSetting);
 
-            var db = redisServer.GetDatabase(request.KeyPayload.RedisSetting.SelectedDatabase);
             KeyListItem myKey = new KeyListItem();
 
             if (redisServer != null)
@@ -63,6 +62,7 @@ namespace RadishV2.Server.Application.Handler
                 throw new RedisException("Not Connected to Redis");
             }
 
+            redisServer.Close();
             redisServer.Dispose();
 
             return Task.FromResult(myKey);
@@ -94,6 +94,7 @@ namespace RadishV2.Server.Application.Handler
                             {
                                 values.Add(new KeyValue(hashVal.Name, hashVal.Value));
                             }
+                            values = values.OrderBy(x => x.Name).ToList();
                             break;
 
                         case RedisType.List:

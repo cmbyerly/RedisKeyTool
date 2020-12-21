@@ -9,7 +9,9 @@ namespace RadishV2.Server.Application.Command
     /// <seealso cref="MediatR.IRequest{RadishV2.Shared.KeyListItem}" />
     public class GetRedisKey : IRequest<KeyListItem>
     {
-        public GetRedisKey() { }
+        public GetRedisKey()
+        {
+        }
 
         /// <summary>
         /// Gets or sets the key payload.

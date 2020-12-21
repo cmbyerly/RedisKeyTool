@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using RadishV2.Shared;
-using System.Collections.Generic;
 
 namespace RadishV2.Server.Application.Command
 {
@@ -8,9 +7,9 @@ namespace RadishV2.Server.Application.Command
     /// Get the redis keys command
     /// </summary>
     /// <seealso cref="MediatR.IRequest{System.Collections.Generic.List{RadishV2.Shared.KeyListItem}}" />
-    public class GetRedisKeys : IRequest<List<KeyListItem>>
+    public class KillConnection : IRequest<bool>
     {
-        public GetRedisKeys()
+        public KillConnection()
         {
         }
 
@@ -20,6 +19,6 @@ namespace RadishV2.Server.Application.Command
         /// <value>
         /// The redis setting.
         /// </value>
-        public RedisSetting RedisSetting { get; set; }
+        public ConnectionKiller ConnectionKiller { get; set; }
     }
 }

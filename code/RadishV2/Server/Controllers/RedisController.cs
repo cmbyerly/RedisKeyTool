@@ -182,10 +182,27 @@ namespace RadishV2.Server.Controllers
             return result;
         }
 
+        /// <summary>
+        /// Inflates the keys.
+        /// </summary>
+        /// <param name="payload">The payload.</param>
+        /// <returns></returns>
         [HttpPost("keys/inflate")]
         public KeyListItem InflateKeys([FromBody] KeyPayload payload)
         {
             var result = _mediatr.Send(new GetRedisKey() { KeyPayload = payload }).Result;
+            return result;
+        }
+
+        /// <summary>
+        /// Deletes all keys.
+        /// </summary>
+        /// <param name="payload">The payload.</param>
+        /// <returns></returns>
+        [HttpPost("keys/delete/all")]
+        public ApplicationResponse DeleteAllKeys([FromBody] KeyPayload payload)
+        {
+            var result = _mediatr.Send(new DeleteAllKeys() { KeyPayload = payload }).Result;
             return result;
         }
     }

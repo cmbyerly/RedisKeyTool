@@ -71,6 +71,15 @@ namespace RadishV2.Server.Application.Handler
                         var expTime = TimeSpan.Parse(request.KeyPayload.KeyListItem.Expiry);
                         db.KeyExpire(request.KeyPayload.KeyListItem.KeyName, expTime);
                     }
+                    else
+                    {
+                        var expiry = db.KeyTimeToLive(request.KeyPayload.KeyListItem.KeyName);
+                        if (expiry != null)
+                        {
+                            TimeSpan? timeSpan = null;
+                            db.KeyExpire(request.KeyPayload.KeyListItem.KeyName, timeSpan);
+                        }
+                    }
                 }
                 else
                 {

@@ -16,6 +16,16 @@
                 <h3>Keys</h3>
             </div>
         </div>
+        <div class="row pl-3 pb-1 pt-2">
+            <div class="col-sm-12">
+                Count: @(rs.KeyList.Count)
+            </div>
+        </div>
+        <div class="row pl-3 pb-1 pt-2">
+            <div class="col-sm-12">
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Click="@((args) => DeleteAllKeys())" Disabled="@(rs.KeyList.Count <= 0)">Purge All Keys</RadzenButton>
+            </div>
+        </div>
         <div class="row pl-3 pb-1 align-top">
             <div class="col-sm-7">
                 <RadzenDropDown AllowClear="false" TValue="RedisType"
@@ -122,6 +132,23 @@
 
         await loadingService.StopLoading();
         StateHasChanged();
+    }
+
+    async Task DeleteAllKeys()
+    {
+        bool? result = await dialogService.Confirm("Are you sure? This cannot be undone.", "Delete All", new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
+        if (result != null)
+        {
+            if (result == true)
+            {
+                KeyPayload keyPayload = new KeyPayload();
+                keyPayload.RedisSetting = rs.RedisSetting;
+
+                HttpResponseMessage response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/delete/all", keyPayload);
+                var applicationResponse = await response.Content.ReadFromJsonAsync<ApplicationResponse>();
+                rs.KeyList.Clear();
+            }
+        }
     }
 
     async void OnChange(object value)

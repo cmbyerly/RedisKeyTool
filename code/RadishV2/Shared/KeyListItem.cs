@@ -1,4 +1,5 @@
 ﻿using StackExchange.Redis;
+using System;
 using System.Collections.Generic;
 
 namespace RadishV2.Shared
@@ -37,6 +38,14 @@ namespace RadishV2.Shared
         /// Whether or not it is a numeric value.
         /// </value>
         public bool IsNumeric { get; set; }
+
+        /// <summary>
+        /// Gets or sets the expiry.
+        /// </summary>
+        /// <value>
+        /// The expiry.
+        /// </value>
+        public String Expiry { get; set; }
 
         /// <summary>
         /// Gets the type of the key.
@@ -120,12 +129,21 @@ namespace RadishV2.Shared
         /// <param name="value">The value.</param>
         /// <param name="isNumeric">if set to <c>true</c> [is numeric].</param>
         /// <param name="keyRedisType">Type of the key redis.</param>
-        public KeyListItem(string key, List<KeyValue> value, bool isNumeric, RedisType keyRedisType)
+        public KeyListItem(string key, List<KeyValue> value, bool isNumeric, RedisType keyRedisType, TimeSpan? expiry)
         {
             this.KeyName = key;
             this.KeyValues = value;
             this._keyRedisType = keyRedisType;
             this.IsNumeric = isNumeric;
+
+            if (expiry == null)
+            {
+                this.Expiry = "00:00:00";
+            }
+            else
+            {
+                this.Expiry = $"{expiry.Value.Hours.ToString().PadLeft(2, '0')}:{expiry.Value.Minutes.ToString().PadLeft(2, '0')}:{expiry.Value.Seconds.ToString().PadLeft(2, '0')}";
+            }
         }
     }
 }

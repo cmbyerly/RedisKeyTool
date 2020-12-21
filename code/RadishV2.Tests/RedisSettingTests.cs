@@ -13,7 +13,7 @@ namespace RadishV2.Shared.Tests
             Assert.True(redisSetting.RedisUrl == "localhost:6379");
             Assert.True(redisSetting.RedisUsername == string.Empty);
             Assert.True(redisSetting.RedisPassword == string.Empty);
-            Assert.True(redisSetting.AllowAdmin == false);
+            Assert.True(redisSetting.AllowAdmin == true);
         }
     }
 }

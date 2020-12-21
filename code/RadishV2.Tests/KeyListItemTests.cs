@@ -34,7 +34,7 @@ namespace RadishV2.Shared.Tests
         [Fact()]
         public void KeyListItemTest3()
         {
-            KeyListItem keyListItem = new KeyListItem("myKey", new List<KeyValue>(), false, StackExchange.Redis.RedisType.Hash);
+            KeyListItem keyListItem = new KeyListItem("myKey", new List<KeyValue>(), false, StackExchange.Redis.RedisType.Hash, null);
             Assert.True(keyListItem.KeyValues.Count == 0);
             Assert.True(keyListItem.KeyName == "myKey");
             Assert.True(keyListItem.KeyType == "hash");

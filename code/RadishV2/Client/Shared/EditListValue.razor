@@ -69,7 +69,7 @@
                 <div class="col-sm">
                     <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                    @bind-Value=@value Data=@newItem.KeyValues TextProperty="Value" ValueProperty="Value"
-                                   Style="height: 200px;margin-bottom: 5px;width: 100%;margin-left: 5px;margin-bottom: 5px;"
+                                   Style="min-height: 300px; max-height: 400px; margin-bottom: 5px; width: 100%; margin-left: 5px; margin-bottom: 5px;"
                                    Change=@(args => OnChange(args))>
                         <Template Context="listContext">
                             <div class="text-nowrap">

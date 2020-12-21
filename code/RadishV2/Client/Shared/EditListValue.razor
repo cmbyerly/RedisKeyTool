@@ -30,6 +30,15 @@
                     <RadzenRequiredValidator Component="KeyName" Text="Key name is required" Popup=true Style="position: absolute" />
                 </div>
             </div>
+            <div class="row pb-3">
+                <div class="col-sm-4">
+                    Expires In
+                </div>
+                <div class="col-sm-8">
+                    <RadzenMask Mask="**:**:**" Pattern="[^0-9]" Placeholder="00:00:00" Name="Expiration" @bind-Value=@newItem.Expiry />
+                    <RadzenButton ButtonStyle="ButtonStyle.Info" Click=@(args => ShowExpiration()) Icon="help" />
+                </div>
+            </div>
             <div class="row">
                 <div class="col-sm-4">
                     Value

@@ -18,7 +18,7 @@ namespace RadishV2.Shared
             this.RedisUsername = string.Empty;
             this.RedisPassword = string.Empty;
             this.SelectedDatabase = 0;
-            this.AllowAdmin = false;
+            this.AllowAdmin = true;
         }
 
         /// <summary>

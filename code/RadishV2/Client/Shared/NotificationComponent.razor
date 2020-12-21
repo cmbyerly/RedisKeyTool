@@ -1,4 +1,6 @@
-﻿@inject NotificationService notificationService
+﻿@using RadishV2.Client.Dialogs
+
+@inject NotificationService notificationService
 @inject Radzen.DialogService dialogService
 @inject LoadingService loadingService
 
@@ -32,5 +34,13 @@
         notificationService.Notify(message);
 
         StateHasChanged();
+    }
+
+    public async Task ShowExpiration()
+    {
+        DialogOptions options = new DialogOptions();
+        options.ShowClose = true;
+
+        dynamic value = await dialogService.OpenAsync<AboutExpiration>("About Expiration", null, options);
     }
 }

@@ -1,4 +1,5 @@
-﻿@inject Radzen.DialogService dialogService
+﻿@inherits NotificationComponent
+@inject Radzen.DialogService dialogService
 
 <RadzenCard Style="margin-bottom: 20px;">
     <RadzenTemplateForm TItem="KeyListItem" Data=@newItem Submit=@OnSubmit>
@@ -10,6 +11,15 @@
                 <div class="col-sm-8">
                     <RadzenTextBox Placeholder="String Value" Name="KeyName" @bind-Value="@newItem.KeyName" Style="margin-bottom: 20px; width: 60%;" />
                     <RadzenRequiredValidator Component="KeyName" Text="Key name is required" Popup=true Style="position: absolute" />
+                </div>
+            </div>
+            <div class="row pb-3">
+                <div class="col-sm-4">
+                    Expires In
+                </div>
+                <div class="col-sm-8">
+                    <RadzenMask Mask="**:**:**" Pattern="[^0-9]" Placeholder="00:00:00" Name="Expiration" @bind-Value=@newItem.Expiry />
+                    <RadzenButton ButtonStyle="ButtonStyle.Info" Click=@(args => ShowExpiration()) Icon="help" />
                 </div>
             </div>
             <div class="row">

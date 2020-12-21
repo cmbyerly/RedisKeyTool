@@ -69,6 +69,12 @@ namespace RadishV2.Server.Application.Handler
 
                         response = new ApplicationResponse(true, "Added or Updated Keys");
                     }
+
+                    if (request.KeyPayload.KeyListItem.Expiry != null && request.KeyPayload.KeyListItem.Expiry != "00:00:00")
+                    {
+                        var expTime = TimeSpan.Parse(request.KeyPayload.KeyListItem.Expiry);
+                        db.KeyExpire(request.KeyPayload.KeyListItem.KeyName, expTime);
+                    }
                 }
                 else
                 {

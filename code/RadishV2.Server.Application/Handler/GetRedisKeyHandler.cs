@@ -4,6 +4,7 @@ using RadishV2.Server.Application.Command;
 using RadishV2.Server.Application.Utils;
 using RadishV2.Shared;
 using StackExchange.Redis;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -125,7 +126,8 @@ namespace RadishV2.Server.Application.Handler
                     }
                 }
 
-                retval = new KeyListItem(key, values, false, db.KeyType(key));
+                var expiry = db.KeyTimeToLive(key);
+                retval = new KeyListItem(key, values, false, db.KeyType(key), expiry);
             }
             else
             {

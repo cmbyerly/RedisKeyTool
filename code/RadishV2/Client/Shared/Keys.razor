@@ -30,7 +30,7 @@
             <div class="col-sm-7">
                 <RadzenDropDown AllowClear="false" TValue="RedisType"
                                 Data="@(dataTypes.Select(c => new { KeyTypeName = c.KeyTypeName, RedisType = c.RedisType }).Distinct())"
-                                TextProperty="KeyTypeName" ValueProperty="RedisType" Change="@(args => KeyTypeChange(args))" Disabled="@isDisabled">
+                                TextProperty="KeyTypeName" ValueProperty="RedisType" Change="@(args => KeyTypeChange(args))">
                 </RadzenDropDown>
             </div>
             <div class="col-sm-5">
@@ -40,7 +40,7 @@
         <div class="row pl-3 pb-1">
             <div class="col-sm-12">
                 <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@value Data=@rs.KeyList TextProperty="KeyName" ValueProperty="KeyName"
-                               Change=@(args => OnChange(args)) Style="height:400px; width:100%;">
+                               Change=@(args => OnChange(args)) Style="min-height:400px; max-height:575px; width:100%;">
                     <Template>
                         <div class="text-nowrap">
                             <RadzenButton ButtonStyle="ButtonStyle.Danger" Click="@((args) => DeleteKey((context as KeyListItem)))" Icon="delete"></RadzenButton>

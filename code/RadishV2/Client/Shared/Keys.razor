@@ -13,17 +13,12 @@
     <div class="container">
         <div class="row pl-3 pb-1 pt-2">
             <div class="col-sm-12">
-                <h3>Keys</h3>
+                <h3>Keys - @(keyCount)</h3>
             </div>
         </div>
         <div class="row pl-3 pb-1 pt-2">
             <div class="col-sm-12">
-                Count: @(rs.KeyList.Count)
-            </div>
-        </div>
-        <div class="row pl-3 pb-1 pt-2">
-            <div class="col-sm-12">
-                <RadzenButton ButtonStyle="ButtonStyle.Danger" Click="@((args) => DeleteAllKeys())" Disabled="@(rs.KeyList.Count <= 0)">Purge All Keys</RadzenButton>
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Click="@((args) => DeleteAllKeys())" Disabled="@(rs.KeyList.Count <= 0)" Style="width: 100%">Purge All Keys</RadzenButton>
             </div>
         </div>
         <div class="row pl-3 pb-1 align-top">
@@ -39,7 +34,7 @@
         </div>
         <div class="row pl-3 pb-1">
             <div class="col-sm-12">
-                <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@value Data=@rs.KeyList TextProperty="KeyName" ValueProperty="KeyName"
+                <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@value Data=@displayedKeys TextProperty="KeyName" ValueProperty="KeyName"
                                Change=@(args => OnChange(args)) Style="min-height:400px; max-height:575px; width:100%;">
                     <Template>
                         <div class="text-nowrap">
@@ -50,15 +45,30 @@
                 </RadzenListBox>
             </div>
         </div>
+        <div class="row pl-3 pb-1">
+            <div class="col-sm-4">
+                <RadzenButton ButtonStyle="ButtonStyle.Secondary" Click="@((args) => PrevKeys(args))" Style="width: 100%" Icon="navigate_before" Disabled="rs.RedisSetting.KeyPage <= 0"></RadzenButton>
+            </div>
+            <div class="col-sm-4">
+                <RadzenNumeric TValue="int" Min="1" Max="@lastPage" @bind-Value=@currentPage Step="1" Change=@(args => GoPage(args)) />
+            </div>
+            <div class="col-sm-4">
+                <RadzenButton ButtonStyle="ButtonStyle.Secondary" Click="@((args) => NextKeys(args))" Style="width: 100%" Icon="navigate_next" Disabled="currentPosition >= rs.KeyList.Count"></RadzenButton>
+            </div>
+        </div>
     </div>
 </RadzenCard>
 
 @code {
 
-    string value = "";
-    List<KeyType> dataTypes = new List<KeyType>();
-    RedisType redisType = RedisType.None;
-    bool isDisabled = true;
+        string value = "";
+        List<KeyType> dataTypes = new List<KeyType>();
+        List<KeyListItem> displayedKeys = new List<KeyListItem>();
+        RedisType redisType = RedisType.None;
+        int keyCount = 0;
+        int currentPosition = 0;
+        int currentPage = 1;
+        int lastPage = 1;
 
     protected override Task OnInitializedAsync()
     {
@@ -73,17 +83,81 @@
 
         rs.Notify += OnNotify;
 
+        LoadKeyCount();
+
+        CalculateLastPage();
+
+        rs.RedisSetting.KeyPage = 0;
+        GoPage(1);
+
         StateHasChanged();
 
         return Task.CompletedTask;
+    }
+
+    public void LoadKeyCount()
+    {
+        // Getting the total key count.
+        keyCount = rs.KeyList.Count;
+
+        StateHasChanged();
+    }
+
+    public void PrevKeys(MouseEventArgs e)
+    {
+        if (rs.RedisSetting.KeyPage > 0)
+        {
+            rs.RedisSetting.KeyPage--;
+            currentPage = rs.RedisSetting.KeyPage + 1;
+            currentPosition = (rs.RedisSetting.KeyPage * 500 + 500);
+
+            int rangeEnd = (rs.RedisSetting.KeyPage * 500 + 500) > rs.KeyList.Count ? rs.KeyList.Count - (rs.RedisSetting.KeyPage * 500) : 500;
+
+            displayedKeys = rs.KeyList.GetRange(rs.RedisSetting.KeyPage * 500, 500).ToList();
+
+            StateHasChanged();
+        }
+    }
+
+    public void NextKeys(MouseEventArgs e)
+    {
+        int endIndex = rs.KeyList.Count - 1;
+
+        if (currentPosition <= endIndex)
+        {
+            rs.RedisSetting.KeyPage++;
+            currentPage = rs.RedisSetting.KeyPage + 1;
+            currentPosition = (rs.RedisSetting.KeyPage * 500 + 500);
+
+            int rangeEnd = (rs.RedisSetting.KeyPage * 500 + 500) > endIndex ? endIndex - (rs.RedisSetting.KeyPage * 500) : 500;
+
+            displayedKeys = rs.KeyList.GetRange(rs.RedisSetting.KeyPage * 500, rangeEnd).ToList();
+
+            StateHasChanged();
+        }
+    }
+
+    public void GoPage(int arg)
+    {
+        if (keyCount > 0)
+        {
+            int endIndex = rs.KeyList.Count - 1;
+
+            rs.RedisSetting.KeyPage = currentPage - 1;
+            currentPosition = (rs.RedisSetting.KeyPage * 500 + 500);
+
+            int rangeEnd = (rs.RedisSetting.KeyPage * 500 + 500) > endIndex ? endIndex - (rs.RedisSetting.KeyPage * 500) : 500;
+
+            displayedKeys = rs.KeyList.GetRange(rs.RedisSetting.KeyPage * 500, rangeEnd).ToList();
+
+            StateHasChanged();
+        }
     }
 
     public async Task OnNotify(bool key)
     {
         await InvokeAsync(() =>
         {
-            isDisabled = false;
-
             StateHasChanged();
         });
     }
@@ -123,7 +197,17 @@
 
         if (applicationResponse.IsSuccess)
         {
-            rs.KeyList.Remove(keyListItem);
+            var rskIndex = rs.KeyList.FindIndex(x => x.KeyName == keyListItem.KeyName);
+            rs.KeyList.RemoveAt(rskIndex);
+
+            var dispIndex = displayedKeys.FindIndex(x => x.KeyName == keyListItem.KeyName);
+            displayedKeys.RemoveAt(dispIndex);
+
+            LoadKeyCount();
+
+            CalculateLastPage();
+
+            IsGoToLastPage();
         }
         else
         {
@@ -147,6 +231,12 @@
                 HttpResponseMessage response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/delete/all", keyPayload);
                 var applicationResponse = await response.Content.ReadFromJsonAsync<ApplicationResponse>();
                 rs.KeyList.Clear();
+                displayedKeys.Clear();
+                LoadKeyCount();
+
+                CalculateLastPage();
+
+                IsGoToLastPage();
             }
         }
     }
@@ -228,6 +318,12 @@
             if (applicationResponse.IsSuccess)
             {
                 rs.KeyList.Add(keyPayload.KeyListItem);
+                displayedKeys.Add(keyPayload.KeyListItem);
+                GoPage(lastPage);
+                LoadKeyCount();
+
+                CalculateLastPage();
+
                 ShowNotification(applicationResponse.Message);
             }
             else
@@ -238,6 +334,33 @@
 
         await loadingService.StopLoading();
         StateHasChanged();
+    }
+
+    void CalculateLastPage()
+    {
+        if (keyCount > 0)
+        {
+            if ((Convert.ToInt32(keyCount) % 500) != 0)
+            {
+                lastPage = (Convert.ToInt32(keyCount) / 500) + 1;
+            }
+            else
+            {
+                lastPage = (Convert.ToInt32(keyCount) / 500);
+            }
+        }
+        else
+        {
+            lastPage = 1;
+        }
+    }
+
+    void IsGoToLastPage()
+    {
+        if (currentPage > lastPage)
+        {
+            GoPage(lastPage);
+        }
     }
 
 }

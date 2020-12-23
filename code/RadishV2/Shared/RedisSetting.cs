@@ -19,6 +19,7 @@ namespace RadishV2.Shared
             this.RedisPassword = string.Empty;
             this.SelectedDatabase = 0;
             this.AllowAdmin = true;
+            this.KeyPage = 0;
         }
 
         /// <summary>
@@ -68,5 +69,13 @@ namespace RadishV2.Shared
         ///   <c>true</c> if [allow admin]; otherwise, <c>false</c>.
         /// </value>
         public bool AllowAdmin { get; set; }
+
+        /// <summary>
+        /// Gets or sets the key page.
+        /// </summary>
+        /// <value>
+        /// The key page.
+        /// </value>
+        public int KeyPage { get; set; }
     }
 }

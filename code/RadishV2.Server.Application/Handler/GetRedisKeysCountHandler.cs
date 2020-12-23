@@ -4,7 +4,7 @@ using RadishV2.Server.Application.Command;
 using RadishV2.Server.Application.Utils;
 using RadishV2.Shared;
 using StackExchange.Redis;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,7 +14,7 @@ namespace RadishV2.Server.Application.Handler
     /// This gets our redis keys
     /// </summary>
     /// <seealso cref="MediatR.IRequestHandler{RadishV2.Server.Application.Command.GetRedisKeys, System.Collections.Generic.List{RadishV2.Shared.KeyListItem}}" />
-    public class GetRedisKeysHandler : IRequestHandler<GetRedisKeys, List<KeyListItem>>
+    public class GetRedisKeysCountHandler : IRequestHandler<GetRedisKeysCount, ApplicationResponse>
     {
         /// <summary>
         /// The logger
@@ -25,7 +25,7 @@ namespace RadishV2.Server.Application.Handler
         /// Initializes a new instance of the <see cref="GetRedisKeysHandler"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public GetRedisKeysHandler(ILogger<GetRedisKeysHandler> logger)
+        public GetRedisKeysCountHandler(ILogger<GetRedisKeysHandler> logger)
         {
             _logger = logger;
         }
@@ -39,32 +39,33 @@ namespace RadishV2.Server.Application.Handler
         /// Response from the request
         /// </returns>
         /// <exception cref="RedisException">Not Connected to Redis</exception>
-        public Task<List<KeyListItem>> Handle(GetRedisKeys request, CancellationToken cancellationToken)
+        public Task<ApplicationResponse> Handle(GetRedisKeysCount request, CancellationToken cancellationToken)
         {
+            ApplicationResponse applicationResponse;
             ConnectionMultiplexer connectionMultiplexer;
             var redisServer = ConnectionBuilder.BuildConnectToRedisServer(request.RedisSetting, out connectionMultiplexer);
-            var db = connectionMultiplexer.GetDatabase(request.RedisSetting.SelectedDatabase);
 
-            List<KeyListItem> myKeys = new List<KeyListItem>();
             if (redisServer != null)
             {
-                var keys = redisServer.Keys(request.RedisSetting.SelectedDatabase);
-                foreach (var key in keys)
-                {
-                    KeyListItem item = new KeyListItem(key, db.KeyType(key));
-                    myKeys.Add(item);
-                }
+                int pageSize = 250;
+                RedisValue pattern = default;
+                long cursor = 0;
+                int pageOffset = 0;
+
+                var keys = redisServer.Keys(request.RedisSetting.SelectedDatabase, pattern, pageSize, cursor, pageOffset, CommandFlags.None);
+                applicationResponse = new ApplicationResponse(true, keys.ToList().Count.ToString());
             }
             else
             {
                 _logger.LogError("Not Connected to Redis");
+                applicationResponse = new ApplicationResponse(false, "Not Connected to Redis");
                 throw new RedisException("Not Connected to Redis");
             }
 
             connectionMultiplexer.Close();
             connectionMultiplexer.Dispose();
 
-            return Task.FromResult(myKeys);
+            return Task.FromResult(applicationResponse);
         }
     }
 }

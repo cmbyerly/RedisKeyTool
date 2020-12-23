@@ -46,6 +46,18 @@ namespace RadishV2.Server.Controllers
         }
 
         /// <summary>
+        /// Gets the keys count.
+        /// </summary>
+        /// <param name="setting">The setting.</param>
+        /// <returns></returns>
+        [HttpPost("keys/count")]
+        public ApplicationResponse GetKeysCount([FromBody] RedisSetting setting)
+        {
+            var result = _mediatr.Send(new GetRedisKeysCount() { RedisSetting = setting }).Result;
+            return result;
+        }
+
+        /// <summary>
         /// Gets the clients.
         /// </summary>
         /// <param name="setting">The setting.</param>

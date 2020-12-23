@@ -146,6 +146,7 @@
             HttpResponseMessage response = await Http.PostAsJsonAsync<RedisSetting>("Redis/keys", setting);
             rs.KeyList.Clear();
             rs.KeyList.AddRange(await response.Content.ReadFromJsonAsync<KeyListItem[]>());
+            rs.RedisSetting.KeyPage = 0;
 
             ShowNotification("Loaded Database");
 

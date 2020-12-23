@@ -70,6 +70,18 @@ namespace RadishV2.Server.Controllers
         }
 
         /// <summary>
+        /// Gets the configuration.
+        /// </summary>
+        /// <param name="setting">The setting.</param>
+        /// <returns></returns>
+        [HttpPost("config")]
+        public DatabaseConfigResponse GetConfiguration([FromBody] RedisSetting setting)
+        {
+            var result = _mediatr.Send(new GetRedisServerInfo() { RedisSetting = setting }).Result;
+            return result;
+        }
+
+        /// <summary>
         /// Kills the connection.
         /// </summary>
         /// <param name="setting">The setting.</param>

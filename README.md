@@ -22,7 +22,7 @@ I have been uploading the docker image of this if you just want to use it.
 2. `docker run --restart=always -d --name radishv2 --link redis:redis -p 9000:80 cmbyerly/radishv2:latest`
 3. The access it [Go here](http://localhost:9000)
 4. In the "Redis URL and Port" field, put `redis:6379`
-5. You can also put in the FQDN instead of `redis:6379` so something like my.qualified.domain:6379
+5. You can also put in the FQDN instead of `redis:6379` so something like `my.qualified.domain:6379`
 
 ### Hub Page
 

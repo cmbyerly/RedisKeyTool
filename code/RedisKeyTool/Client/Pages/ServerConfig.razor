@@ -1,0 +1,45 @@
+﻿@page "/serverconfig"
+@inherits NotificationComponent
+
+@using RedisKeyTool.Client.Dialogs
+@using StackExchange.Redis;
+
+@inject SettingService rs
+@inject KeyService ks
+@inject HttpClient Http
+@inject LoadingService loadingService
+
+<Waiting />
+
+<h2>Server Configuration</h2>
+<h3>Version - @databaseConfigResponse.Version</h3>
+<h4>Configuration</h4>
+<ul>
+    @foreach (var configItem in databaseConfigResponse.ConfigItems)
+    {
+        <li>@configItem</li>
+    }
+</ul>
+
+<h4>Features</h4>
+<ul>
+    @foreach (var featureItem in databaseConfigResponse.FeatureList)
+    {
+    <li>@featureItem</li>
+    }
+</ul>
+
+@code {
+    DatabaseConfigResponse databaseConfigResponse = new DatabaseConfigResponse();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await loadingService.StartLoading();
+        RedisSetting setting = rs.RedisSetting;
+        HttpResponseMessage response = await Http.PostAsJsonAsync<RedisSetting>("Redis/config", setting);
+        databaseConfigResponse = await response.Content.ReadFromJsonAsync<DatabaseConfigResponse>();
+
+        await loadingService.StopLoading();
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,52 @@
+﻿@inherits NotificationComponent
+
+@using RedisKeyTool.Client.Dialogs
+@using StackExchange.Redis;
+
+@inject SettingService rs
+@inject KeyService ks
+@inject HttpClient Http
+@inject LoadingService loadingService
+
+<RadzenMenu Style="background-color: transparent">
+    <RadzenMenuItem Text="Home" Path="/" Icon="home"></RadzenMenuItem>
+
+    @if (isDisabled == false)
+    {
+        <RadzenMenuItem Text="Keys" Path="editkeys" Icon="create"></RadzenMenuItem>
+        <RadzenMenuItem Text="Server" Icon="dns">
+            <RadzenMenuItem Text="Server Config" Path="serverconfig" Icon="dns"></RadzenMenuItem>
+            <RadzenMenuItem Text="Clients" Path="clientlist" Icon="link"></RadzenMenuItem>
+        </RadzenMenuItem>
+    }
+</RadzenMenu>
+
+@code {
+
+    bool isDisabled = true;
+
+    protected override Task OnInitializedAsync()
+    {
+        rs.Notify += OnNotify;
+
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+
+    public async Task OnNotify(bool key)
+    {
+        await InvokeAsync(() =>
+        {
+            isDisabled = !rs.IsLoggedIn;
+
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        rs.Notify -= OnNotify;
+    }
+
+}

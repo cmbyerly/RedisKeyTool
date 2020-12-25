@@ -1,0 +1,202 @@
+﻿@inherits NotificationComponent
+
+@using RedisKeyTool.Client.Dialogs
+
+@inject SettingService rs
+@inject HttpClient Http
+@inject Radzen.DialogService dialogService
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject LoadingService loadingService
+
+    <h2>Connection</h2>
+
+    <div class="container">
+        <RadzenCard>
+            <div class="row pl-3 pt-1">
+                <div class="col-sm-4">
+                    Redis URL and Port
+                </div>
+                <div class="col-sm-6">
+                    <RadzenTextBox Placeholder="Server Address" @bind-Value=@rs.RedisSetting.RedisUrl Style="width: 100%" />
+                </div>
+                <div class="col-sm-1">
+                    <RadzenButton Click=@(args => SaveConnection()) ButtonStyle="ButtonStyle.Secondary" Icon="save" Style="margin-bottom: 20px;" />
+                </div>
+                <div class="col-sm-1">
+                    <RadzenButton Click=@(args => LoadConnection()) ButtonStyle="ButtonStyle.Light" Icon="get_app" Style="margin-bottom: 20px; margin-right: 3px;" />
+                </div>
+            </div>
+            <div class="row pl-3 pt-1">
+                <div class="col-sm-4">
+                    Redis Username (Optional)
+                </div>
+                <div class="col-sm-8">
+                    <RadzenTextBox Placeholder="User" @bind-Value=@rs.RedisSetting.RedisUsername Style="width: 40%" />
+                </div>
+            </div>
+            <div class="row pl-3 pt-1">
+                <div class="col-sm-4">
+                    Redis Password (Optional)
+                </div>
+                <div class="col-sm-8">
+                    <RadzenPassword Placeholder="Password" @bind-Value=@rs.RedisSetting.RedisPassword Style="width: 40%" />
+                </div>
+            </div>
+            <div class="row pl-3 pt-1">
+                <div class="col-sm">
+                    <RadzenCheckBox TValue="bool" @bind-Value=@rs.RedisSetting.AllowAdmin />
+                    <RadzenLabel Text="Allow Admin" Component="ChkAllowAdmin" Style="margin-left: 5px;" />
+                </div>
+            </div>
+            <div class="row pl-3 pt-1">
+                <div class="col-sm float-sm-left">
+                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="@((args) => Connect(args))" Style="width: 200px">Get Databases</RadzenButton>
+                </div>
+            </div>
+            <div class="row pl-3 pt-1">
+                <div class="col-sm-4">
+                    Select Database
+                </div>
+                <div class="col-sm-4">
+                    <RadzenDropDown AllowClear="false" TValue="int"
+                                    Data="@(databases.Select(c => new { DbNumber = c.DbNumber, DbDisplay = c.DbDisplay }).Distinct())"
+                                    TextProperty="DbDisplay" ValueProperty="DbNumber" Style="width:100px" Change="@(args => ChangeDB(args))">
+                    </RadzenDropDown>
+                </div>
+                <div class="col-sm-4">
+                    <RadzenButton ButtonStyle="ButtonStyle.Secondary" Click="@((args) => GetKeys(args))" Disabled="@(databases.Length <= 0)">Load</RadzenButton>
+                </div>
+            </div>
+        </RadzenCard>
+    </div>
+
+    @code {
+        DbListItem[] databases = new DbListItem[0];
+        RedisSetting[] connections = new RedisSetting[0];
+        bool hasSettings = false;
+        string connectionName = "redisConnections";
+
+        protected override async Task OnInitializedAsync()
+        {
+            hasSettings = await localStorage.ContainKeyAsync(connectionName);
+
+            if (rs.IsLoggedIn)
+            {
+                await loadingService.StartLoading();
+                databases = new DbListItem[0];
+                RedisSetting setting = rs.RedisSetting;
+                HttpResponseMessage response = await Http.PostAsJsonAsync<RedisSetting>("Redis/dbs", setting);
+                DatabaseResponse databaseResponse = await response.Content.ReadFromJsonAsync<DatabaseResponse>();
+
+                if (databaseResponse.IsSuccess)
+                {
+                    databases = databaseResponse.DbListItems.ToArray();
+                    await loadingService.StopLoading();
+                    StateHasChanged();
+                }
+                else
+                {
+                    ShowErrorNotification(databaseResponse.Message);
+                    await loadingService.StopLoading();
+                    StateHasChanged();
+                }
+            }
+        }
+
+        async Task Connect(MouseEventArgs e)
+        {
+            await loadingService.StartLoading();
+            databases = new DbListItem[0];
+            RedisSetting setting = rs.RedisSetting;
+            HttpResponseMessage response = await Http.PostAsJsonAsync<RedisSetting>("Redis/dbs", setting);
+            DatabaseResponse databaseResponse = await response.Content.ReadFromJsonAsync<DatabaseResponse>();
+
+            if (databaseResponse.IsSuccess)
+            {
+                databases = databaseResponse.DbListItems.ToArray();
+
+                ShowNotification("Connected");
+
+                await rs.Update(false);
+                await loadingService.StopLoading();
+                StateHasChanged();
+            }
+            else
+            {
+                ShowErrorNotification(databaseResponse.Message);
+                await rs.Update(false);
+                await loadingService.StopLoading();
+                StateHasChanged();
+            }
+        }
+
+        void ChangeDB(object value)
+        {
+            rs.RedisSetting.SelectedDatabase = (int)value;
+
+            ShowNotification("Database: " + rs.RedisSetting.SelectedDatabase.ToString());
+
+            StateHasChanged();
+        }
+
+        async Task GetKeys(MouseEventArgs e)
+        {
+            await loadingService.StartLoading();
+            RedisSetting setting = rs.RedisSetting;
+            HttpResponseMessage response = await Http.PostAsJsonAsync<RedisSetting>("Redis/keys", setting);
+            rs.KeyList.Clear();
+            rs.KeyList.AddRange(await response.Content.ReadFromJsonAsync<KeyListItem[]>());
+            rs.RedisSetting.KeyPage = 0;
+
+            ShowNotification("Loaded Database");
+
+            await rs.Update(true);
+            await loadingService.StopLoading();
+            StateHasChanged();
+        }
+
+        async void SaveConnection()
+        {
+            DialogOptions options = new DialogOptions();
+            options.ShowClose = true;
+            dynamic value = await dialogService.OpenAsync<ConnectionSave>("Save Connection", null, options);
+
+            if (value is RedisSetting)
+            {
+                if (hasSettings)
+                {
+                    connections = await localStorage.GetItemAsync<RedisSetting[]>(connectionName);
+                    List<RedisSetting> redisSettings = new List<RedisSetting>();
+                    redisSettings.AddRange(connections);
+                    rs.RedisSetting.SettingName = ((RedisSetting)value).SettingName;
+                    redisSettings.Add(rs.RedisSetting);
+                    await localStorage.SetItemAsync<RedisSetting[]>(connectionName, redisSettings.ToArray());
+                    hasSettings = true;
+                }
+                else
+                {
+                    List<RedisSetting> redisSettings = new List<RedisSetting>();
+                    rs.RedisSetting.SettingName = ((RedisSetting)value).SettingName;
+                    redisSettings.Add(rs.RedisSetting);
+                    await localStorage.SetItemAsync<RedisSetting[]>(connectionName, redisSettings.ToArray());
+                    hasSettings = true;
+                }
+            }
+        }
+
+        async void LoadConnection()
+        {
+            DialogOptions options = new DialogOptions();
+            options.ShowClose = true;
+            dynamic value = await dialogService.OpenAsync<ConnectionLoad>("Load Connection", null, options);
+
+            if (value is RedisSetting)
+            {
+                Console.WriteLine(((RedisSetting)value).RedisUrl);
+                rs.RedisSetting = value;
+            }
+
+            StateHasChanged();
+        }
+
+    }

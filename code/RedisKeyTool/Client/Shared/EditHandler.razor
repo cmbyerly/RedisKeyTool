@@ -1,0 +1,70 @@
+﻿@inherits NotificationComponent
+
+@using RedisKeyTool.Client.Dialogs
+@using StackExchange.Redis;
+
+@inject SettingService rs
+@inject KeyService ks
+@inject HttpClient Http
+@inject Radzen.DialogService dialogService
+@inject LoadingService loadingService
+
+@switch (keyListItem.KeyType)
+{
+    case "string":
+        <EditStringValue />
+        break;
+    case "hash":
+        <EditHashValue />
+        break;
+    case "list":
+        <EditListValue />
+        break;
+    case "set":
+        <EditSetValue />
+        break;
+    case "sorted":
+        <EditSortedSetValue />
+        break;
+    default:
+        break;
+}
+
+@code {
+    KeyListItem keyListItem = new KeyListItem();
+
+    protected override Task OnInitializedAsync()
+    {
+        ks.NotifyEditKey += OnEditKeyNotify;
+
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        ks.NotifyEditKey -= OnEditKeyNotify;
+    }
+
+    public async Task OnEditKeyNotify(KeyListItem key)
+    {
+        try
+        {
+            await loadingService.StartLoading();
+            KeyPayload keyPayload = new KeyPayload();
+            keyPayload.RedisSetting = rs.RedisSetting;
+            keyPayload.KeyListItem = key;
+            HttpResponseMessage response = await Http.PostAsJsonAsync<KeyPayload>("Redis/keys/inflate", keyPayload);
+            keyListItem = await response.Content.ReadFromJsonAsync<KeyListItem>();
+
+            ks.CurrentKey = keyListItem;
+            await loadingService.StopLoading();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ShowErrorNotification(ex.Message);
+        }
+    }
+}

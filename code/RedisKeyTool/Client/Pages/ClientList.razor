@@ -1,0 +1,71 @@
+﻿@page "/clientlist"
+@inherits NotificationComponent
+
+@using RedisKeyTool.Client.Dialogs
+@using StackExchange.Redis;
+
+@inject SettingService rs
+@inject KeyService ks
+@inject HttpClient Http
+@inject LoadingService loadingService
+
+    <Waiting />
+
+    <h2>Client List</h2>
+
+    <RadzenGrid AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterMode="FilterMode.Advanced" AllowPaging="true" PageSize="100"
+                AllowSorting="true" Data="@clientList" TItem="ClientListItem" ColumnWidth="200px">
+        <Columns>
+            <RadzenGridColumn Filterable="true" TItem="ClientListItem" Property="Name" Title="Name" />
+            <RadzenGridColumn Filterable="true" TItem="ClientListItem" Property="Address" Title="Address" />
+            <RadzenGridColumn Filterable="true" TItem="ClientListItem" Property="Host" Title="Host" />
+            <RadzenGridColumn Filterable="true" TItem="ClientListItem" Property="Port" Title="Port" />
+            <RadzenGridColumn Filterable="true" TItem="ClientListItem" Property="LastCommand" Title="Last Command" />
+            <RadzenGridColumn Filterable="true" TItem="ClientListItem" Property="FlagsRaw" Title="Flags" />
+            <RadzenGridColumn Filterable="true" TItem="ClientListItem" Property="Database" Title="Database" />
+            <RadzenGridColumn Filterable="true" TItem="ClientListItem" Property="AgeSeconds" Title="Age (Seconds)" />
+            <RadzenGridColumn Filterable="true" TItem="ClientListItem" Property="IdleSeconds" Title="Idle (Seconds)" />
+            <RadzenGridColumn Filterable="true" TItem="ClientListItem" Property="TransactionCommandLength" Title="Transaction Cmd Length" />
+            <RadzenGridColumn Filterable="true" TItem="ClientListItem" Property="SubscriptionCount" Title="Subscriptions" />
+            <RadzenGridColumn Filterable="true" TItem="ClientListItem" Property="PatternSubscriptionCount" Title="Pattern Subscriptions" />
+            <RadzenGridColumn Filterable="false" Sortable="false" TItem="ClientListItem" Property="Id" Title="Close Connection">
+                <Template Context="data">
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Click="@((args) => KillConnection(data.Id))"></RadzenButton>
+                </Template>
+            </RadzenGridColumn>
+        </Columns>
+    </RadzenGrid>
+
+    @code {
+        List<ClientListItem> clientList = new List<ClientListItem>();
+
+        protected override async Task OnInitializedAsync()
+        {
+            await loadingService.StartLoading();
+            clientList = new List<ClientListItem>();
+            RedisSetting setting = rs.RedisSetting;
+            HttpResponseMessage response = await Http.PostAsJsonAsync<RedisSetting>("Redis/clients", setting);
+            var clientResponse = await response.Content.ReadFromJsonAsync<ClientListItem[]>();
+
+            clientList.AddRange(clientResponse);
+
+            await loadingService.StopLoading();
+            StateHasChanged();
+        }
+
+        protected async Task KillConnection(string id)
+        {
+            await loadingService.StartLoading();
+            clientList.Clear();
+            ConnectionKiller setting = new ConnectionKiller();
+            setting.LoadFromSetting(rs.RedisSetting);
+            setting.Id = id;
+            HttpResponseMessage response = await Http.PostAsJsonAsync<ConnectionKiller>("Redis/kill", setting);
+            var clientResponse = await response.Content.ReadFromJsonAsync<ClientListItem[]>();
+
+            clientList.AddRange(clientResponse);
+
+            await loadingService.StopLoading();
+            StateHasChanged();
+        }
+    }

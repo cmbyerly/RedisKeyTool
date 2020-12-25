@@ -14,3 +14,14 @@
 /code/.vs/RadishV2
 /code/RadishV2.Tests/bin/Debug
 /code/RadishV2.Tests/obj
+/code/RedisKeyTool/Client/obj
+/code/RedisKeyTool/Server/obj
+/code/RedisKeyTool/Shared/obj
+/code/RedisKeyTool.Server.Application/obj
+/code/RedisKeyTool.Tests/obj
+/code/RedisKeyTool/Client/bin/Debug/net5.0
+/code/RedisKeyTool/Server/bin/Debug/net5.0
+/code/RedisKeyTool/Shared/bin/Debug/net5.0
+/code/RedisKeyTool.Server.Application/bin/Debug/net5.0
+/code/RedisKeyTool.Tests/bin/Debug/net5.0
+/code/.vs/RedisKeyTool

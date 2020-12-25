@@ -18,6 +18,11 @@
         </div>
         <div class="row pl-3 pb-1 pt-2">
             <div class="col-sm-12">
+                <RadzenButton ButtonStyle="ButtonStyle.Primary" Click="@((args) => GetKeys(args))" Disabled="@(rs.KeyList.Count <= 0)" Style="width: 100%">Load All Keys</RadzenButton>
+            </div>
+        </div>
+        <div class="row pl-3 pb-1 pt-2">
+            <div class="col-sm-12">
                 <RadzenButton ButtonStyle="ButtonStyle.Danger" Click="@((args) => DeleteAllKeys())" Disabled="@(rs.KeyList.Count <= 0)" Style="width: 100%">Purge All Keys</RadzenButton>
             </div>
         </div>
@@ -35,7 +40,7 @@
         <div class="row pl-3 pb-1">
             <div class="col-sm-12">
                 <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@value Data=@displayedKeys TextProperty="KeyName" ValueProperty="KeyName"
-                               Change=@(args => OnChange(args)) Style="min-height:400px; max-height:575px; width:100%;">
+                               Change=@(args => OnChange(args)) Style="min-height:400px; max-height:575px; width:100%;" Name="KeyListBox">
                     <Template>
                         <div class="text-nowrap">
                             <RadzenButton ButtonStyle="ButtonStyle.Danger" Click="@((args) => DeleteKey((context as KeyListItem)))" Icon="delete"></RadzenButton>
@@ -61,14 +66,14 @@
 
 @code {
 
-        string value = "";
-        List<KeyType> dataTypes = new List<KeyType>();
-        List<KeyListItem> displayedKeys = new List<KeyListItem>();
-        RedisType redisType = RedisType.None;
-        int keyCount = 0;
-        int currentPosition = 0;
-        int currentPage = 1;
-        int lastPage = 1;
+    string value = "";
+    List<KeyType> dataTypes = new List<KeyType>();
+    List<KeyListItem> displayedKeys = new List<KeyListItem>();
+    RedisType redisType = RedisType.None;
+    int keyCount = 0;
+    int currentPosition = 0;
+    int currentPage = 1;
+    int lastPage = 1;
 
     protected override Task OnInitializedAsync()
     {
@@ -215,6 +220,31 @@
         }
 
         await loadingService.StopLoading();
+        StateHasChanged();
+    }
+
+    async Task GetKeys(MouseEventArgs e)
+    {
+        await loadingService.StartLoading();
+        RedisSetting setting = rs.RedisSetting;
+        HttpResponseMessage response = await Http.PostAsJsonAsync<RedisSetting>("Redis/keys", setting);
+        rs.KeyList.Clear();
+        rs.KeyList.AddRange(await response.Content.ReadFromJsonAsync<KeyListItem[]>());
+        rs.RedisSetting.KeyPage = 0;
+
+        await rs.Update(true);
+
+        LoadKeyCount();
+
+        CalculateLastPage();
+
+        rs.RedisSetting.KeyPage = 0;
+        GoPage(1);
+
+        ShowNotification("Loaded Keys");
+
+        await loadingService.StopLoading();
+
         StateHasChanged();
     }
 

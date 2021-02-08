@@ -25,3 +25,8 @@
 /code/RedisKeyTool.Server.Application/bin/Debug/net5.0
 /code/RedisKeyTool.Tests/bin/Debug/net5.0
 /code/.vs/RedisKeyTool
+/code/RedisKeyTool/Client/bin/Release/net5.0
+/code/RedisKeyTool/Server/bin/Release/net5.0
+/code/RedisKeyTool/Shared/bin/Release/net5.0
+/code/RedisKeyTool.Server.Application/bin/Release/net5.0
+/code/RedisKeyTool.Tests/bin/Release/net5.0
